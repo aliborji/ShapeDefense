@@ -1,6 +1,6 @@
 from lib import *
 from config import *
-from model import build_model, build_model_dogs
+from model import build_model, build_model_gtsrb
 from utils import * 
 import torchattacks
 from torchattacks import PGD, FGSM
@@ -28,18 +28,18 @@ net_type = 'rgb'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-fo = open(f'./{attack_type}-dogs/results/results_{net_type}.txt', 'w+')
+fo = open(f'./{attack_type}-gtsrb/results/results_{net_type}.txt', 'w+')
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Train a model first
-save_path = f'dogs_{net_type}.pth'
+save_path = f'gtsrb_{net_type}.pth'
 
 
 if train_phase:
-    pass
-    # net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
-    # net.to(device)
-    # train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    # pass
+    net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
+    net.to(device)
+    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
@@ -47,7 +47,7 @@ if train_phase:
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Test the clean model on clean and attacks
-net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
 load_model(net, save_path)
 net.to(device)
 
@@ -67,7 +67,7 @@ for eps_t in [32]: #[8,32]:
 
 
     # Test the clean model on clean and attacks
-    net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net, save_path)
     net.to(device)
 
@@ -76,7 +76,7 @@ for eps_t in [32]: #[8,32]:
     fo.write('Accuracy of clean model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net, save_path)
     net.to(device)
 
@@ -88,18 +88,18 @@ for eps_t in [32]: #[8,32]:
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Now perform adversarial training
-    save_path_robust = f'./{attack_type}-dogs/dogs_{net_type}_{eps_t}_robust_{eps_t}.pth'
+    save_path_robust = f'./{attack_type}-gtsrb/gtsrb_{net_type}_{eps_t}_robust_{eps_t}.pth'
 
     if train_phase:
         # pass    
-        net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+        net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
         net_robust.to(device)
         train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=False)
 
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Test the robust model on clean and attacks
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -107,7 +107,7 @@ for eps_t in [32]: #[8,32]:
     print('Accuracy of robust model on clean images: %f %%' % acc)
     fo.write('Accuracy of robust model on clean images: %f \n' % acc)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust)
     net_robust.to(device)
 
@@ -116,7 +116,7 @@ for eps_t in [32]: #[8,32]:
     fo.write('Accuracy of robust model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
     
@@ -133,14 +133,14 @@ for eps_t in [32]: #[8,32]:
 
     if net_type != 'rgbedge': continue
 
-    save_path_robust = f'./{attack_type}-dogs/dogs_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
+    save_path_robust = f'./{attack_type}-gtsrb/gtsrb_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
 
     if train_phase:
-        net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+        net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
         net_robust.to(device)
         train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=True)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -148,7 +148,7 @@ for eps_t in [32]: #[8,32]:
     print('Accuracy of robust redetect model on clean images: %f %%' % acc)
     fo.write('Accuracy of robust redetect model on clean images: %f \n' % acc)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -157,7 +157,7 @@ for eps_t in [32]: #[8,32]:
     fo.write('Accuracy of robust redetect  model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net_robust, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
     load_model(net_robust, save_path_robust)
     net_robust.to(device)
     
