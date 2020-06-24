@@ -2,6 +2,12 @@ from lib import *
 from edge_detector import *
 from torchvision import datasets
 from torchvision import transforms, datasets, models
+import torch
+import os
+import pandas as pd
+from torch.utils.data import Dataset
+import numpy as np
+from PIL import Image
 
 # class MyDatasetRGB(data.Dataset):
 #     def __init__(self, file_list, transform=None, phase='train'):
@@ -227,3 +233,72 @@ class DogsDataset(data.Dataset):
         labels = self.labels.iloc[idx, 1:]#.as_matrix().astype('float')
         labels = np.argmax(labels)
         return [img_transformed, labels]        
+
+
+
+
+class GTSRB(Dataset):
+    base_folder = 'GTSRB'
+
+    def __init__(self, root_dir, train=False, transform=None net_type):
+        """
+        Args:
+            train (bool): Load trainingset or test set.
+            root_dir (string): Directory containing GTSRB folder.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        self.root_dir = root_dir
+
+        self.sub_directory = 'trainingset' if train else 'testset'
+        self.csv_file_name = 'training.csv' if train else 'test.csv'
+
+        csv_file_path = os.path.join(
+            root_dir, self.base_folder, self.sub_directory, self.csv_file_name)
+
+        self.csv_data = pd.read_csv(csv_file_path)
+
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.csv_data)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.root_dir, self.base_folder, self.sub_directory,
+                                self.csv_data.iloc[idx, 0])
+        img = Image.open(img_path)
+
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+
+        if self.net_type.lower() == 'rgb':
+            pass            
+
+        elif self.net_type.lower() == 'edge': # rgb_egde
+            edge_map = detect_edge_new(img.permute(1,2,0))
+            edge_map = edge_map/255.
+            edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            img = edge_map[None]
+        
+        else: # rgb + edge
+            # borji
+            edge_map = detect_edge_new(img.permute(1,2,0))
+            edge_map = edge_map/255.
+            edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            edge_map = edge_map[None]
+            img = torch.cat((img, edge_map[None]),dim=0)      
+
+
+        classId = self.csv_data.iloc[idx, 1]
+        
+        return img, classId
+
+
+
+
+
+
+
+

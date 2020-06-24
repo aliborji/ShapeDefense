@@ -2,7 +2,7 @@ from lib import *
 from image_transform import ImageTransform
 from config import *
 from utils import make_datapath_list, train_model, load_model
-from dataset import MyDataset, Dataset_MNIST, Dataset_FashionMNIST, DogsDataset
+from dataset import MyDataset, Dataset_MNIST, Dataset_FashionMNIST, DogsDataset, GTSRB
 import torch.nn as nn
 from torchvision import transforms, datasets, models
 from torch.utils.data import Dataset, DataLoader
@@ -11,7 +11,6 @@ from os.path import isfile, join, abspath, exists, isdir, expanduser
 import os
 from torch.optim import lr_scheduler
 from time import time
-import gtsrb_dataset as dataset
 
 
 class Net(nn.Module):
@@ -323,9 +322,9 @@ def build_model_gtsrb(net_type, data_dir):
 
 
     trainset = dataset.GTSRB(
-        root_dir='.', train=True,  transform=transform)
+        root_dir='.', train=True,  transform=transform, net_type)
     testset = dataset.GTSRB(
-        root_dir='.', train=False,  transform=transform)
+        root_dir='.', train=False,  transform=transform, net_type)
 
 
 
@@ -340,7 +339,7 @@ def build_model_gtsrb(net_type, data_dir):
 
 
     # Build model
-    resnet = models.resnet18(pretrained=False)
+    resnet = models.resnet18(pretrained=True)
 
     # import pdb; pdb.set_trace()
     if net_type.lower() == 'rgb':

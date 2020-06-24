@@ -27,12 +27,14 @@ def detect_edge_new(img):
 
   # Applying static edge extraction
   edges_foreground = cv2.bilateralFilter(gray, 9, 75, 75)
-  edges_filtered = cv2.Canny(edges_foreground, 20, 50) #30, 100) # adjust the parameters of the canny here
+  # edges_filtered = cv2.Canny(edges_foreground, 20, 50) #30, 100) # adjust the parameters of the canny here
+
+  edges_filtered = cv2.Canny(edges_foreground, 5, 10) #for gtsrb
 
   # Crop off the edges out of the moving area
   cropped = (foreground // 255) * edges_filtered
 
-  return cropped#edges_filtered
+  return cropped
 
 
 def compute_energy_matrix(img): 

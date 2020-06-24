@@ -47,6 +47,8 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
+                import pdb; pdb.set_trace()   
+
                 # set gradients of optimizer to zero
                 optimizer.zero_grad()
 
@@ -282,6 +284,7 @@ def load_model(net, model_path):
     
 def detect_edge_batch(imgs):        
     # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
+    # FOR THAT, YOU MAY ALSO NEED TO CHANGE THE SOME PARAMETERS; SEE EDGE_DETECTOR.PY
     # import pdb; pdb.set_trace()
     if imgs[0].shape[-1] == 28: # hence mnist
         for im in imgs:
@@ -294,8 +297,8 @@ def detect_edge_batch(imgs):
     else:        
         for im in imgs:
             # import pdb; pdb.set_trace()
-            # edge_map = detect_edge_new(im[:3].permute(1,2,0)) # make it XxYx3!!!
-            edge_map = compute_energy_matrix(im[:3].permute(1,2,0)) # make it XxYx3!!!
+            edge_map = detect_edge_new(im[:3].permute(1,2,0)) # make it XxYx3!!! # CANNY
+            # edge_map = compute_energy_matrix(im[:3].permute(1,2,0)) # make it XxYx3!!!  # SOBEL
             edge_map = edge_map/255.
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             
