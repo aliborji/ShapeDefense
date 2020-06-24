@@ -277,8 +277,8 @@ def build_model_dogs(net_type, data_dir):
     
     
     # freeze all model parameters
-    for param in resnet.parameters():
-        param.requires_grad = False
+    # for param in resnet.parameters():
+    #     param.requires_grad = False
 
     resnet.conv1.requires_grad = True
 
@@ -367,8 +367,8 @@ def build_model_gtsrb(net_type, data_dir):
     
     
     # freeze all model parameters
-    for param in resnet.parameters():
-        param.requires_grad = False
+    # for param in resnet.parameters():
+    #     param.requires_grad = False
 
     resnet.conv1.requires_grad = True
 

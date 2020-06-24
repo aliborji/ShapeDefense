@@ -281,8 +281,8 @@ def load_model(net, model_path):
     
     
 def detect_edge_batch(imgs):        
-    # borji
-#     import pdb; pdb.set_trace()
+    # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
+    # import pdb; pdb.set_trace()
     if imgs[0].shape[-1] == 28: # hence mnist
         for im in imgs:
             edge_map = detect_edge_mnist(im[0][None])[0] 
