@@ -37,6 +37,20 @@ def detect_edge_new(img):
   return cropped
 
 
+
+def detect_edge_gtsrb(img):
+
+  # import pdb;pdb.set_trace()
+  # print(img.shape) 
+  gray = np.array(img.mean(axis=2).cpu()*1).astype('float64')
+  # print(gray.shape) 
+  # edges_filtered = cv2.Canny(gray, 5, 10) #for gtsrb
+  edge_map = feature.canny(gray, sigma = 1, low_threshold=0.1, high_threshold=.2)
+  return edge_map
+  # return edges_filtered
+
+
+
 def compute_energy_matrix(img): 
     '''
     extract the sobel edge detector

@@ -309,22 +309,26 @@ def build_model_dogs(net_type, data_dir):
 def build_model_gtsrb(net_type, data_dir):
     # import pdb; pdb.set_trace()
 
-    INPUT_SIZE = 32
+    INPUT_SIZE = 64
     NUM_CLASSES = 43
 
 
     transform = transforms.Compose([
-        transforms.Resize((32, 32)),
+        transforms.Resize((INPUT_SIZE, INPUT_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize((0.3403, 0.3121, 0.3214),
                              (0.2724, 0.2608, 0.2669))
     ])
 
+        # transforms.Normalize((0.3403, 0.3121, 0.3214),
+        #                      (0.2724, 0.2608, 0.2669))
+    # ])
 
-    trainset = dataset.GTSRB(
-        root_dir='.', train=True,  transform=transform, net_type)
-    testset = dataset.GTSRB(
-        root_dir='.', train=False,  transform=transform, net_type)
+
+    trainset = GTSRB(
+        root_dir='.', train=True,  transform=transform, net_type=net_type)
+    testset = GTSRB(
+        root_dir='.', train=False,  transform=transform, net_type=net_type)
 
 
 
@@ -343,7 +347,11 @@ def build_model_gtsrb(net_type, data_dir):
 
     # import pdb; pdb.set_trace()
     if net_type.lower() == 'rgb':
-        pass
+          # new_layer = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          # resnet.conv1 = new_layer
+        pass  
+
+
         # resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)    
     elif net_type.lower() == 'edge': # rgb_egde
         with torch.no_grad():

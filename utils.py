@@ -47,7 +47,7 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                import pdb; pdb.set_trace()   
+                # import pdb; pdb.set_trace()   
 
                 # set gradients of optimizer to zero
                 optimizer.zero_grad()

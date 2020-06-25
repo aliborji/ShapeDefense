@@ -240,7 +240,7 @@ class DogsDataset(data.Dataset):
 class GTSRB(Dataset):
     base_folder = 'GTSRB'
 
-    def __init__(self, root_dir, train=False, transform=None net_type):
+    def __init__(self, root_dir, train=False, transform=None, net_type='rgb'):
         """
         Args:
             train (bool): Load trainingset or test set.
@@ -260,6 +260,8 @@ class GTSRB(Dataset):
 
         self.transform = transform
 
+        self.net_type = net_type
+
     def __len__(self):
         return len(self.csv_data)
 
@@ -267,7 +269,6 @@ class GTSRB(Dataset):
         img_path = os.path.join(self.root_dir, self.base_folder, self.sub_directory,
                                 self.csv_data.iloc[idx, 0])
         img = Image.open(img_path)
-
 
         if self.transform is not None:
             img = self.transform(img)
@@ -277,17 +278,25 @@ class GTSRB(Dataset):
             pass            
 
         elif self.net_type.lower() == 'edge': # rgb_egde
-            edge_map = detect_edge_new(img.permute(1,2,0))
-            edge_map = edge_map/255.
+            # import pdb; pdb.set_trace()
+            # print(img.permute(1,2,0).shape)
+            # img = (img - img.min()) / (img.max() - img.min())
+            edge_map = detect_edge_gtsrb(img.permute(1,2,0))
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            if (edge_map.max() - edge_map.min()) > 0:
+                edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+
             img = edge_map[None]
+            # print(edge_map.shape)
         
         else: # rgb + edge
             # borji
-            edge_map = detect_edge_new(img.permute(1,2,0))
-            edge_map = edge_map/255.
+            # img = (img - img.min()) / (img.max() - img.min())
+            edge_map = detect_edge_gtsrb(img.permute(1,2,0))
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            edge_map = edge_map[None]
+            if (edge_map.max() - edge_map.min()) > 0:
+                edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+
             img = torch.cat((img, edge_map[None]),dim=0)      
 
 
