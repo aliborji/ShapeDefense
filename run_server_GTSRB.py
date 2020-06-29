@@ -22,7 +22,7 @@ BATCH_SIZE = 100
 
 train_phase = True
 
-attack_type = 'FGSM'
+attack_type = 'PGD'
 
 net_type = 'edge'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -36,10 +36,10 @@ save_path = f'gtsrb_{net_type}.pth'
 
 
 if train_phase:
-    # pass
-    net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
-    net.to(device)
-    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    pass
+    # net, dataloader_dict, criterior, optimizer = build_model_gtsrb(net_type, './gtsrb/')
+    # net.to(device)
+    # train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
