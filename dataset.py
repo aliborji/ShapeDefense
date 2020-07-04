@@ -237,10 +237,9 @@ class DogsDataset(data.Dataset):
 
 
 
-class GTSRB(Dataset):
-    base_folder = 'GTSRB'
+class folderDB(Dataset):
 
-    def __init__(self, root_dir, train=False, transform=None, net_type='rgb'):
+    def __init__(self, root_dir, train=False, transform=None, net_type='rgb', base_folder=''):
         """
         Args:
             train (bool): Load trainingset or test set.
@@ -249,6 +248,8 @@ class GTSRB(Dataset):
                 on a sample.
         """
         self.root_dir = root_dir
+        self.base_folder = base_folder
+
 
         self.sub_directory = 'trainingset' if train else 'testset'
         self.csv_file_name = 'training.csv' if train else 'test.csv'
@@ -268,7 +269,7 @@ class GTSRB(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.root_dir, self.base_folder, self.sub_directory,
                                 self.csv_data.iloc[idx, 0])
-        img = Image.open(img_path)
+        img = Image.open(img_path).convert('RGB')
 
         if self.transform is not None:
             img = self.transform(img)
@@ -288,6 +289,10 @@ class GTSRB(Dataset):
 
             img = edge_map[None]
             # print(edge_map.shape)
+
+        elif self.net_type.lower() == 'gray':
+            img = img.mean(axis=2)
+            
         
         else: # rgb + edge
             # borji
@@ -300,9 +305,72 @@ class GTSRB(Dataset):
             img = torch.cat((img, edge_map[None]),dim=0)      
 
 
+
+
         classId = self.csv_data.iloc[idx, 1]
         
         return img, classId
+
+
+
+
+
+
+
+
+# class Icons(Dataset):
+#     base_folder = 'Icons-50'
+
+#     def __init__(self, root_dir, train=False, transform=None, net_type='rgb',):
+
+#         self.root_dir = root_dir
+
+#         self.sub_directory = 'trainingset' if train else 'testset'
+#         self.csv_file_name = 'training.csv' if train else 'test.csv'
+
+#         csv_file_path = os.path.join(
+#             root_dir, self.base_folder, self.sub_directory, self.csv_file_name)
+
+#         self.csv_data = pd.read_csv(csv_file_path)
+
+#         self.transform = transform
+
+#         self.net_type = net_type
+
+#     def __len__(self):
+#         return len(self.csv_data)
+
+#     def __getitem__(self, idx):
+#         img_path = os.path.join(self.root_dir, self.base_folder, self.sub_directory,
+#                                 self.csv_data.iloc[idx, 0])
+#         img = Image.open(img_path).convert('RGB')
+
+#         if self.transform is not None:
+#             img = self.transform(img)
+
+#         if self.net_type.lower() == 'rgb':
+#             pass            
+
+#         elif self.net_type.lower() == 'edge': # rgb_egde
+#             edge_map = detect_edge_gtsrb(img.permute(1,2,0))
+#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+#             if (edge_map.max() - edge_map.min()) > 0:
+#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+
+#             img = edge_map[None]
+        
+#         else: # rgb + edge
+#             edge_map = detect_edge_gtsrb(img.permute(1,2,0))
+#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+#             if (edge_map.max() - edge_map.min()) > 0:
+#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+
+#             img = torch.cat((img, edge_map[None]),dim=0)      
+
+
+#         classId = self.csv_data.iloc[idx, 1]
+        
+#         return img, classId
 
 
 
