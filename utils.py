@@ -120,17 +120,11 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
                 continue
 
             for inputs, labels in dataloader_dict[phase]:
-                # move inputs, labels to GPU/CPU device
+                import pdb; pdb.set_trace()
+
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                # borji; perform the attack with probability .5
-#                 if torch.rand(1).item() < .5:
-                # import pdb; pdb.set_trace()
-
-#                     inputs = inputs.clone(requires_grad = True)
-#                 inputs = (inputs-inputs.min()) / (inputs.max()-inputs.min())    
-                
                 inputs_adv = attack(inputs, labels)#.cuda()
                 
                 # set gradients of optimizer to zero

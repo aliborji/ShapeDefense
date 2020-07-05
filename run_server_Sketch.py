@@ -42,10 +42,10 @@ save_path = f'sketch_{net_type}.pth'
 
 
 if train_phase:
-    # pass
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-    net.to(device)
-    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    pass
+    # net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    # net.to(device)
+    # train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
