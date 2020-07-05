@@ -1,6 +1,6 @@
 from lib import *
 from config import *
-# from edge_detector import *
+from edge_detector import *
 import torchattacks
 import copy
 from torchattacks import PGD, FGSM
@@ -145,7 +145,7 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
                     # with newly computed edge map  
                     # if (net_type not in ['rgb', 'gray', 'edge']) and redetect_edge: # for 
                     if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
-                        inputs_adv = detect_edge_batch(inputs_adv, net_type);
+                        inputs_adv = detect_edge_batch(inputs_adv);
                         # pass
 
                     outputs_adv = net(inputs_adv)
@@ -240,7 +240,7 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
             outputs = net(images)
 
             if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
-              images = detect_edge_batch(images, net_type)
+              images = detect_edge_batch(images)
               outputs = net(images)
 
             _, predicted = torch.max(outputs.data, 1)
@@ -291,7 +291,7 @@ def detect_edge_batch(imgs):
     # import pdb; pdb.set_trace()
 
     for im in imgs:
-        edge_map = edge_detector(im) 
+        edge_map = edge_detect(im) 
         # edge_map = edge_map/255.
         if (edge_map.max() - edge_map.min()) > 0:
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
