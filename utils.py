@@ -1,10 +1,12 @@
 from lib import *
 from config import *
-from edge_detector import *
+# from edge_detector import *
 import torchattacks
 import copy
 from torchattacks import PGD, FGSM
 import time
+
+
 
 def make_datapath_list(phase='train'):
     rootpath = './dataset/'
@@ -44,6 +46,7 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
 
             for inputs, labels in tqdm(dataloader_dict[phase]):
                 # move inputs, labels to GPU/CPU device
+                # import pdb; pdb.set_trace()
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -140,9 +143,9 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
 
 
                     # with newly computed edge map  
-                    if (net_type.lower() not in ['rgb', 'gray', 'edge']) and redetect_edge: # for 
-                        # import pdb; pdb.set_trace()
-                        inputs_adv = detect_edge_batch(inputs_adv);
+                    # if (net_type not in ['rgb', 'gray', 'edge']) and redetect_edge: # for 
+                    if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
+                        inputs_adv = detect_edge_batch(inputs_adv, net_type);
                         # pass
 
                     outputs_adv = net(inputs_adv)
@@ -194,7 +197,6 @@ def test_model_clean(net, dataloader_dict):
     for images, labels in dataloader_dict['val']:    
         # images = (images-images.min()) / (images.max()-images.min())
         images, labels = images.to(device), labels.to(device)         
-        # import pdb; pdb.set_trace()
         
         outputs = net(images)
         _, predicted = torch.max(outputs.data, 1)
@@ -237,8 +239,8 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
 
             outputs = net(images)
 
-            if (net_type not in ['rgb', 'gray', 'edge']) and redetect_edge: 
-              images = detect_edge_batch(images)
+            if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
+              images = detect_edge_batch(images, net_type)
               outputs = net(images)
 
             _, predicted = torch.max(outputs.data, 1)
@@ -280,30 +282,51 @@ def load_model(net, model_path):
 #     return edge_map
     
     
+
+
+
 def detect_edge_batch(imgs):        
     # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
     # FOR THAT, YOU MAY ALSO NEED TO CHANGE THE SOME PARAMETERS; SEE EDGE_DETECTOR.PY
     # import pdb; pdb.set_trace()
-    if imgs[0].shape[-1] == 28: # hence mnist
-        for im in imgs:
-            edge_map = detect_edge_mnist(im[0][None])[0] 
-            edge_map = edge_map/255.
-            if (edge_map.max() - edge_map.min()) > 0:
-                edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
-            edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            im[1] = edge_map
-    else:        
-        for im in imgs:
-            # import pdb; pdb.set_trace()
-            edge_map = detect_edge_new(im[:3].permute(1,2,0)) # make it XxYx3!!! # CANNY
-            # edge_map = compute_energy_matrix(im[:3].permute(1,2,0)) # make it XxYx3!!!  # SOBEL
-            edge_map = edge_map/255.
-            edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            
 
-            im[3] = edge_map
+    for im in imgs:
+        edge_map = edge_detector(im) 
+        # edge_map = edge_map/255.
+        if (edge_map.max() - edge_map.min()) > 0:
+            edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+        edge_map = torch.tensor(edge_map, dtype=torch.float32)
+        im[-1] = edge_map # replace the last map
     
     return imgs
+
+
+
+
+# def detect_edge_batch(imgs):        
+#     # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
+#     # FOR THAT, YOU MAY ALSO NEED TO CHANGE THE SOME PARAMETERS; SEE EDGE_DETECTOR.PY
+#     # import pdb; pdb.set_trace()
+#     if imgs[0].shape[-1] == 28: # hence mnist
+#         for im in imgs:
+#             edge_map = detect_edge_mnist(im[0][None])[0] 
+#             edge_map = edge_map/255.
+#             if (edge_map.max() - edge_map.min()) > 0:
+#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+#             im[1] = edge_map
+#     else:        
+#         for im in imgs:
+#             # import pdb; pdb.set_trace()
+#             edge_map = detect_edge_new(im[:3].permute(1,2,0)) # make it XxYx3!!! # CANNY
+#             # edge_map = compute_energy_matrix(im[:3].permute(1,2,0)) # make it XxYx3!!!  # SOBEL
+#             edge_map = edge_map/255.
+#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            
+
+#             im[3] = edge_map
+    
+#     return imgs
 
     
     

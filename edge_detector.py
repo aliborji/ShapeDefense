@@ -34,18 +34,24 @@ def detect_edge_new(img):
   # Crop off the edges out of the moving area
   cropped = (foreground // 255) * edges_filtered
 
+  cropped = cropped/255.
+
   return cropped
 
 
 
 def detect_edge_gtsrb(img):
 
+  img = img.permute(1,2,0)
   # import pdb;pdb.set_trace()
   # print(img.shape) 
   gray = np.array(img.mean(axis=2).cpu()*1).astype('float64')
   # print(gray.shape) 
   # edges_filtered = cv2.Canny(gray, 5, 10) #for gtsrb
   edge_map = feature.canny(gray, sigma = 1, low_threshold=0.1, high_threshold=.2)
+
+  edge_map = edge_map/255.
+
   return edge_map
   # return edges_filtered
 
@@ -96,4 +102,6 @@ def detect_edge_sobel(img):
 
 def detect_edge_mnist(img):
     edge_map = feature.canny(np.array(img[0], dtype=np.float64), sigma = .1, low_threshold=1.5) #, high_threshold=.1)
+    edge_map = edge_map/255.
+
     return edge_map[None]    

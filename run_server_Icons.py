@@ -11,41 +11,34 @@ from os.path import isfile, join, abspath, exists, isdir, expanduser
 from os import listdir
 import torch.nn as nn
 from torchvision import transforms, datasets, models
-import edge_detector 
+
+
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
-
-# --------------------------------------------------------------------------------------------------------------------------------------------
 
 NUM_EPOCHS = 10
 BATCH_SIZE = 100
 
+
 train_phase = True
 
-# you also need to set the edge_detect in config!!!!!
-
 attack_type = 'FGSM'
-net_type = 'rgbedge'
-data_dir = 'GTSRB'
+
+net_type = 'edge'
+
+data_dir = 'Icons-50'
 inp_size = 64
 n_classes = 50
 
 
-
-
-
-
-
-# --------------------------------------------------------------------------------------------------------------------------------------------
-net_type = net_type.lower()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-fo = open(f'./{attack_type}-gtsrb/results/results_{net_type}.txt', 'w+')
+
+fo = open(f'./{attack_type}-icons/results/results_{net_type}.txt', 'w+')
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Train a model first
-save_path = f'gtsrb_{net_type}.pth'
+save_path = f'icons_{net_type}.pth'
 
 
 if train_phase:
@@ -101,7 +94,7 @@ for eps_t in [8,32]:
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Now perform adversarial training
-    save_path_robust = f'./{attack_type}-gtsrb/gtsrb_{net_type}_{eps_t}_robust_{eps_t}.pth'
+    save_path_robust = f'./{attack_type}-icons/icons_{net_type}_{eps_t}_robust_{eps_t}.pth'
 
     if train_phase:
         # pass    
@@ -146,7 +139,7 @@ for eps_t in [8,32]:
 
     if net_type != 'rgbedge': continue
 
-    save_path_robust = f'./{attack_type}-gtsrb/gtsrb_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
+    save_path_robust = f'./{attack_type}-icons/icons_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
 
     if train_phase:
         net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)

@@ -1,5 +1,4 @@
 from lib import *
-from edge_detector import *
 from torchvision import datasets
 from torchvision import transforms, datasets, models
 import torch
@@ -8,32 +7,8 @@ import pandas as pd
 from torch.utils.data import Dataset
 import numpy as np
 from PIL import Image
-
-# class MyDatasetRGB(data.Dataset):
-#     def __init__(self, file_list, transform=None, phase='train'):
-#         self.file_list = file_list
-#         self.transform = transform
-#         self.phase = phase
-
-#     def __len__(self):
-#         return len(self.file_list)
-
-#     def __getitem__(self, idx):
-#         img_path = self.file_list[idx]
-#         img = Image.open(img_path)
-
-#         img_transform = self.transform(img, self.phase)
-        
-        
-#         label = img_path.split('/')[-2]
-
-#         if label == 'dogs':
-#             label = 0
-#         elif label == 'cats':
-#             label = 1
-
-#         return img_transformed, label    
-
+from config import *
+from edge_detector import *
 
 
 class MyDataset(data.Dataset):
@@ -47,26 +22,25 @@ class MyDataset(data.Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx):
-#         import pdb; pdb.set_trace()
         img_path = self.file_list[idx]
         img = Image.open(img_path)
 
-        if self.net_type.lower() == 'rgb':
+        if self.net_type == 'rgb':
             img_transformed = self.transform(img, self.phase)
             img_transformed = img_transformed - img_transformed.min()
             
-        elif self.net_type.lower() == 'edge': # rgb_egde
+        elif self.net_type == 'edge': # rgb_egde
             img_transformed = self.transform(img, self.phase)            
-            edge_map = detect_edge_new(img_transformed.permute(1,2,0))
-            edge_map = edge_map/255.
+            edge_map = edge_detect(img_transformed.permute(1,2,0))
+            # edge_map = edge_map/255.
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             img_transformed = edge_map[None]
         
         else: # rgb + edge
             # borji
             img_transformed = self.transform(img, self.phase)            
-            edge_map = detect_edge_new(img_transformed.permute(1,2,0))
-            edge_map = edge_map/255.
+            edge_map = edge_detect(img_transformed.permute(1,2,0))
+            # edge_map = edge_map/255.
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             img_transformed = torch.cat((img_transformed, edge_map[None]),dim=0)      
         
@@ -105,23 +79,21 @@ class Dataset_MNIST(data.Dataset):
 
         img, label = self.data[idx][0], self.data[idx][1]
     
-        if self.net_type.lower() == 'gray':
+        if self.net_type == 'gray':
 #             img_transformed = self.transform(img, self.phase)
 #             img_transformed = img_transformed - img_transformed.min()
               pass 
             
-        elif self.net_type.lower() == 'edge': # rgb_egde
+        elif self.net_type == 'edge': # rgb_egde
 #             img_transformed = self.transform(img, self.phase)            
-            edge_map = detect_edge_mnist(img)
-            edge_map = edge_map/255.
+            edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             img = edge_map#[None]
         
         else: # gray + edge
             # borji
-            edge_map = detect_edge_mnist(img)
-            edge_map = edge_map/255.
+            edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             img = torch.cat((img, edge_map),dim=0)#[None]
@@ -151,30 +123,25 @@ class Dataset_FashionMNIST(data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-#         import pdb; pdb.set_trace()
 
         img, label = self.data[idx][0], self.data[idx][1]
     
-        if self.net_type.lower() == 'gray':
+        if self.net_type == 'gray':
 #             img_transformed = self.transform(img, self.phase)
 #             img_transformed = img_transformed - img_transformed.min()
               pass 
             
-        elif self.net_type.lower() == 'edge': # rgb_egde
-#             img_transformed = self.transform(img, self.phase)            
-            edge_map = detect_edge_mnist(img)
-            edge_map = edge_map/255.  # these two lines might not be necessary
+        elif self.net_type == 'edge': # rgb_egde
+            edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             img = edge_map#[None]
         
         else: # gray + edge
-            # borji
-            edge_map = detect_edge_mnist(img)
-            edge_map = edge_map/255.
+            edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            img = torch.cat((img, edge_map),dim=0)#[None]
+            img = torch.cat((img, edge_map), dim=0)#[None]
         
 
 
@@ -183,6 +150,7 @@ class Dataset_FashionMNIST(data.Dataset):
     
 
 class DogsDataset(data.Dataset):
+    # for dog breed classification
     def __init__(self, labels, root_dir, edge_dir, subset=False, transform=None, net_type='rgb'):
         self.labels = labels
         self.root_dir = root_dir
@@ -199,22 +167,18 @@ class DogsDataset(data.Dataset):
         return len(self.labels)
     
     def __getitem__(self, idx):
-        if self.net_type.lower() == 'rgb':
+        if self.net_type == 'rgb':
             img_name = '{}.jpg'.format(self.labels.iloc[idx, 0])
             fullname = osp.join(self.root_dir, img_name)
             img = Image.open(fullname)
             img_transformed = self.transform(img)
 #             img_transformed = img_transformed - img_transformed.min()
             
-        elif self.net_type.lower() == 'edge': # edge
-#             import pdb; pdb.set_trace()
+        elif self.net_type == 'edge': # edge; already precomputed!
             img_name = '{}.jpg'.format(self.labels.iloc[idx, 0])
             fullname = osp.join(self.edge_dir, img_name)
             edge_map = Image.open(fullname)
             img_transformed = self.edge_transform(edge_map)
-            # print(img_transformed.max())
-            # print(img_transformed.min())
-            # print(img_transformed.shape)
                     
         else: # rgb + edge
             img_name = '{}.jpg'.format(self.labels.iloc[idx, 0])
@@ -275,29 +239,34 @@ class folderDB(Dataset):
             img = self.transform(img)
 
 
-        if self.net_type.lower() == 'rgb':
+        if self.net_type == 'rgb':
             pass            
 
-        elif self.net_type.lower() == 'edge': # rgb_egde
-            # import pdb; pdb.set_trace()
-            # print(img.permute(1,2,0).shape)
-            # img = (img - img.min()) / (img.max() - img.min())
-            edge_map = detect_edge_gtsrb(img.permute(1,2,0))
+        elif self.net_type == 'gray':
+            img = img.mean(axis=0).unsqueeze(0) #input has three channels but is gray level; \eg sketch dataset
+        
+        elif self.net_type == 'edge': # rgb_egde
+            edge_map = edge_detect(img)
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             if (edge_map.max() - edge_map.min()) > 0:
                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
 
             img = edge_map[None]
-            # print(edge_map.shape)
 
-        elif self.net_type.lower() == 'gray':
-            img = img.mean(axis=2)
-            
-        
+
+        elif self.net_type == 'grayedge': # notice input has three channels here! but is gray level! sketch db
+            edge_map = edge_detect(img)
+            edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            if (edge_map.max() - edge_map.min()) > 0:
+                edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
+
+            grayImg = img.mean(axis=0).unsqueeze(0) #input has three channels; in case of sketch dataset
+
+            img = torch.cat((grayImg, edge_map[None]),dim=0)      
+
+
         else: # rgb + edge
-            # borji
-            # img = (img - img.min()) / (img.max() - img.min())
-            edge_map = detect_edge_gtsrb(img.permute(1,2,0))
+            edge_map = edge_detect(img)
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             if (edge_map.max() - edge_map.min()) > 0:
                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
@@ -305,77 +274,9 @@ class folderDB(Dataset):
             img = torch.cat((img, edge_map[None]),dim=0)      
 
 
-
-
         classId = self.csv_data.iloc[idx, 1]
         
         return img, classId
-
-
-
-
-
-
-
-
-# class Icons(Dataset):
-#     base_folder = 'Icons-50'
-
-#     def __init__(self, root_dir, train=False, transform=None, net_type='rgb',):
-
-#         self.root_dir = root_dir
-
-#         self.sub_directory = 'trainingset' if train else 'testset'
-#         self.csv_file_name = 'training.csv' if train else 'test.csv'
-
-#         csv_file_path = os.path.join(
-#             root_dir, self.base_folder, self.sub_directory, self.csv_file_name)
-
-#         self.csv_data = pd.read_csv(csv_file_path)
-
-#         self.transform = transform
-
-#         self.net_type = net_type
-
-#     def __len__(self):
-#         return len(self.csv_data)
-
-#     def __getitem__(self, idx):
-#         img_path = os.path.join(self.root_dir, self.base_folder, self.sub_directory,
-#                                 self.csv_data.iloc[idx, 0])
-#         img = Image.open(img_path).convert('RGB')
-
-#         if self.transform is not None:
-#             img = self.transform(img)
-
-#         if self.net_type.lower() == 'rgb':
-#             pass            
-
-#         elif self.net_type.lower() == 'edge': # rgb_egde
-#             edge_map = detect_edge_gtsrb(img.permute(1,2,0))
-#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-#             if (edge_map.max() - edge_map.min()) > 0:
-#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
-
-#             img = edge_map[None]
-        
-#         else: # rgb + edge
-#             edge_map = detect_edge_gtsrb(img.permute(1,2,0))
-#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-#             if (edge_map.max() - edge_map.min()) > 0:
-#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
-
-#             img = torch.cat((img, edge_map[None]),dim=0)      
-
-
-#         classId = self.csv_data.iloc[idx, 1]
-        
-#         return img, classId
-
-
-
-
-
 
 
 

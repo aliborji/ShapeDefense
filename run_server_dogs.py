@@ -16,7 +16,7 @@ from torchvision import transforms, datasets, models
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-NUM_EPOCHS = 30
+NUM_EPOCHS = 10
 BATCH_SIZE = 100
 
 
@@ -24,7 +24,9 @@ train_phase = True
 
 attack_type = 'FGSM'
 
-net_type = 'rgb'
+net_type = 'edge'
+print(f'running {attack_type} and {net_type} ...')
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
@@ -36,10 +38,10 @@ save_path = f'dogs_{net_type}.pth'
 
 
 if train_phase:
-    pass
-    # net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
-    # net.to(device)
-    # train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    # pass
+    net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net.to(device)
+    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
@@ -58,7 +60,7 @@ fo.write('Accuracy of original model on clean images: %f \n' % acc)
 
 
 
-for eps_t in [32]: #[8,32]:
+for eps_t in [8,32]:
 
     print(f'eps_t={eps_t}')
     fo.write(f'eps_t={eps_t} \n')
