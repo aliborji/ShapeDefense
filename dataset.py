@@ -244,6 +244,7 @@ class folderDB(Dataset):
 
         elif self.net_type == 'gray':
             img = img.mean(axis=0).unsqueeze(0) #input has three channels but is gray level; \eg sketch dataset
+            img = (img - img.min()) / (img.max() - img.min())                    
         
         elif self.net_type == 'edge': # rgb_egde
             edge_map = edge_detect(img)
@@ -261,6 +262,7 @@ class folderDB(Dataset):
                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
 
             grayImg = img.mean(axis=0).unsqueeze(0) #input has three channels; in case of sketch dataset
+            grayImg = (grayImg - grayImg.min()) / (grayImg.max() - grayImg.min())                                
 
             img = torch.cat((grayImg, edge_map[None]),dim=0)      
 

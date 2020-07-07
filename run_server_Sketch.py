@@ -24,7 +24,7 @@ train_phase = True
 
 attack_type = 'FGSM'
 
-net_type = 'gray'
+net_type = 'grayedge'
 
 data_dir = 'Sketch'
 inp_size = 64
@@ -53,13 +53,13 @@ if train_phase:
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Test the clean model on clean and attacks
-net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-load_model(net, save_path)
-net.to(device)
+# net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+# load_model(net, save_path)
+# net.to(device)
 
-acc, images = test_model_clean(net, dataloader_dict)
-print('Accuracy of original model on clean images: %f ' % acc)
-fo.write('Accuracy of original model on clean images: %f \n' % acc)
+# acc, images = test_model_clean(net, dataloader_dict)
+# print('Accuracy of original model on clean images: %f ' % acc)
+# fo.write('Accuracy of original model on clean images: %f \n' % acc)
 
 
 
@@ -73,20 +73,20 @@ for eps_t in [8,32]:
 
 
     # Test the clean model on clean and attacks
+    # net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    # load_model(net, save_path)
+    # net.to(device)
+
+    # acc_attack, images = test_model_attack(net, dataloader_dict, epsilons, attack_type, net_type, redetect_edge=False)
+    # print('Accuracy of clean model on adversarial images: %f %%' % acc_attack[0])
+    # fo.write('Accuracy of clean model on adversarial images: %f \n' % acc_attack[0])
+
+
     net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
     load_model(net, save_path)
     net.to(device)
 
-    acc_attack, images = test_model_attack(net, dataloader_dict, epsilons, attack_type, net_type, redetect_edge=False)
-    print('Accuracy of clean model on adversarial images: %f %%' % acc_attack[0])
-    fo.write('Accuracy of clean model on adversarial images: %f \n' % acc_attack[0])
-
-
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-    load_model(net, save_path)
-    net.to(device)
-
-    if net_type == 'rgbedge':
+    if net_type == 'grayedge':
         acc_attack, images = test_model_attack(net, dataloader_dict, epsilons, attack_type, net_type, redetect_edge=True)
         print('Accuracy of clean model on adversarial images with redetect_edge: %f %%' % acc_attack[0])
         fo.write('Accuracy of clean model on adversarial images with redetect_edge: %f \n' % acc_attack[0])
@@ -97,21 +97,21 @@ for eps_t in [8,32]:
     save_path_robust = f'./{attack_type}-sketch/sketch_{net_type}_{eps_t}_robust_{eps_t}.pth'
 
     if train_phase:
-        # pass    
-        net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-        net_robust.to(device)
-        train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=False)
+        pass    
+        # net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+        # net_robust.to(device)
+        # train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=False)
 
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Test the robust model on clean and attacks
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-    load_model(net_robust, save_path_robust) 
-    net_robust.to(device)
+    # net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    # load_model(net_robust, save_path_robust) 
+    # net_robust.to(device)
 
-    acc, images = test_model_clean(net_robust, dataloader_dict)
-    print('Accuracy of robust model on clean images: %f %%' % acc)
-    fo.write('Accuracy of robust model on clean images: %f \n' % acc)
+    # acc, images = test_model_clean(net_robust, dataloader_dict)
+    # print('Accuracy of robust model on clean images: %f %%' % acc)
+    # fo.write('Accuracy of robust model on clean images: %f \n' % acc)
 
     net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust)
@@ -126,7 +126,7 @@ for eps_t in [8,32]:
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
     
-    if net_type == 'rgbedge':    
+    if net_type == 'grayedge':    
         acc_attack, images = test_model_attack(net_robust, dataloader_dict, epsilons, attack_type, net_type, redetect_edge=True)
         print('Accuracy of robust  model on adversarial images with redetect_edge: %f %%' % acc_attack[0])
         fo.write('Accuracy of robust  model on adversarial images with redetect_edge: %f \n' % acc_attack[0])
@@ -137,7 +137,7 @@ for eps_t in [8,32]:
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Now perform adversarial training with redetect
 
-    if net_type != 'rgbedge': continue
+    if net_type != 'grayedge': continue
 
     save_path_robust = f'./{attack_type}-sketch/sketch_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
 

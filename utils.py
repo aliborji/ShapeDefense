@@ -45,12 +45,9 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
                 continue
 
             for inputs, labels in tqdm(dataloader_dict[phase]):
-                # move inputs, labels to GPU/CPU device
-                # import pdb; pdb.set_trace()
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                # set gradients of optimizer to zero
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
@@ -81,7 +78,6 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
 # Train model
 def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_path, attack_type = 'FGSM', eps=8/255, net_type='rgb', redetect_edge=False):
 
-    # device GPU or CPU?
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("device: {}".format(device))
 
@@ -120,14 +116,13 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
                 continue
 
             for inputs, labels in dataloader_dict[phase]:
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
 
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
                 inputs_adv = attack(inputs, labels)#.cuda()
                 
-                # set gradients of optimizer to zero
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
