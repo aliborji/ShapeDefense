@@ -26,10 +26,10 @@ train_phase = True
 # you also need to set the edge_detect in config!!!!!
 
 attack_type = 'FGSM'
-net_type = 'edge'
-data_dir = 'tiny-imagenet-200'
-inp_size = 128
-n_classes = 200
+net_type = 'rgbedge'
+data_dir = 'imagenette2-160'
+inp_size = 160
+n_classes = 10
 
 
 
@@ -39,11 +39,11 @@ n_classes = 200
 net_type = net_type.lower()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-fo = open(f'./{attack_type}-tinyImgnet/results/results_{net_type}.txt', 'w+')
+fo = open(f'./{attack_type}-{data_dir}/results/results_{net_type}.txt', 'w+')
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Train a model first
-save_path = f'tinyImgnet_{net_type}.pth'
+save_path = f'{data_dir}_{net_type}.pth'
 
 
 if train_phase:
@@ -99,7 +99,7 @@ for eps_t in [8,32]:
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Now perform adversarial training
-    save_path_robust = f'./{attack_type}-tinyImgnet/tinyImgnet_{net_type}_{eps_t}_robust_{eps_t}.pth'
+    save_path_robust = f'./{attack_type}-{data_dir}/{data_dir}_{net_type}_{eps_t}_robust_{eps_t}.pth'
 
     if train_phase:
         # pass    
@@ -144,7 +144,7 @@ for eps_t in [8,32]:
 
     if net_type != 'rgbedge': continue
 
-    save_path_robust = f'./{attack_type}-tinyImgnet/tinyImgnet_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
+    save_path_robust = f'./{attack_type}-{data_dir}/{data_dir}_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
 
     if train_phase:
         net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)

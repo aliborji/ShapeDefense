@@ -25,11 +25,11 @@ train_phase = True
 
 # you also need to set the edge_detect in config!!!!!
 
-attack_type = 'FGSM'
-net_type = 'rgbedge'
+attack_type = 'PGD'
+net_type = 'edge'
 data_dir = 'GTSRB'
 inp_size = 64
-n_classes = 50
+n_classes = 43
 
 
 
@@ -49,10 +49,10 @@ save_path = f'gtsrb_{net_type}.pth'
 
 
 if train_phase:
-    # pass
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-    net.to(device)
-    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    pass
+    # net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    # net.to(device)
+    # train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
@@ -69,7 +69,7 @@ print('Accuracy of original model on clean images: %f ' % acc)
 fo.write('Accuracy of original model on clean images: %f \n' % acc)
 
 
-
+xx
 
 for eps_t in [8,32]:
 

@@ -103,6 +103,51 @@ class Dataset_MNIST(data.Dataset):
         return img, label
 
 
+
+class Dataset_CIFAR10(data.Dataset):
+    def __init__(self, transform=None, phase='train', net_type='rgb'):
+        self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
+                        transforms.ToTensor(),
+                        ]))        
+        
+        self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
+                        transforms.ToTensor(),
+                        ]))        
+#         self.transform = transform
+        self.phase = phase
+        self.net_type = net_type        
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+#         import pdb; pdb.set_trace()
+
+        img, label = self.data[idx][0], self.data[idx][1]
+    
+        if self.net_type == 'rgb':
+#             img_transformed = self.transform(img, self.phase)
+#             img_transformed = img_transformed - img_transformed.min()
+              pass 
+            
+        elif self.net_type == 'edge': # rgb_egde
+#             img_transformed = self.transform(img, self.phase)            
+            edge_map = edge_detect(img)
+            edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())
+            edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            img = edge_map#[None]
+        
+        else: # gray + edge
+            # borji
+            edge_map = edge_detect(img)
+            edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
+            edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            img = torch.cat((img, edge_map),dim=0)#[None]
+        
+
+
+        return img, label
+
     
 
     
@@ -255,7 +300,7 @@ class folderDB(Dataset):
             img = edge_map[None]
 
 
-        elif self.net_type == 'grayedge': # notice input has three channels here! but is gray level! sketch db
+        elif self.net_type == 'grayedge': # notice input has three channels here! but is gray level! sketch db; all pixel ranges normalized to [0 1]
             edge_map = edge_detect(img)
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             if (edge_map.max() - edge_map.min()) > 0:

@@ -15,6 +15,9 @@ def detect_edge_new(img):
         varThreshold=2,
         detectShadows=False)
 
+  # print(img.shape)
+  img = img.permute(1,2,0)
+
   gray = np.array(img.mean(axis=2).cpu()*255).astype('uint8')
 
   # Extract the foreground
@@ -57,10 +60,27 @@ def detect_edge_gtsrb(img):
 
 
 
+def detect_edge_tiny(img):
+
+  img = img.permute(1,2,0)
+  # import pdb;pdb.set_trace()
+  # print(img.shape) 
+  gray = np.array(img.mean(axis=2).cpu()*1).astype('float64')
+  # print(gray.shape) 
+  # edges_filtered = cv2.Canny(gray, 5, 10) #for gtsrb
+  edge_map = feature.canny(gray, sigma = 2)#, low_threshold=0.01, high_threshold=.2)
+
+  edge_map = edge_map/255.
+
+  return edge_map
+  # return edges_filtered
+
+
 def compute_energy_matrix(img): 
     '''
     extract the sobel edge detector
     '''
+    img = img.permute(1,2,0)
     gray = np.array(img.mean(axis=2).cpu()*255).astype('uint8')
     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
  
@@ -81,6 +101,8 @@ def compute_energy_matrix(img):
 def detect_edge_sobel(img):
   # image = np.array(img.mean(axis=2).cpu()*255).astype('uint8')
   # processed = ndimage.sobel(img, 0)
+
+  img = img.permute(1,2,0)
 
   gray = np.array(img.mean(axis=2).cpu()*255).astype('uint8')
   imgBLR = cv2.GaussianBlur(gray, (3,3), 0)

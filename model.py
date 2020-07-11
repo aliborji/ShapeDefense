@@ -2,7 +2,7 @@ from lib import *
 from image_transform import ImageTransform
 from config import *
 from utils import make_datapath_list, train_model, load_model
-from dataset import MyDataset, Dataset_MNIST, Dataset_FashionMNIST, DogsDataset, folderDB
+from dataset import MyDataset, Dataset_MNIST, Dataset_FashionMNIST, DogsDataset, folderDB, Dataset_CIFAR10
 import torch.nn as nn
 from torchvision import transforms, datasets, models
 from torch.utils.data import Dataset, DataLoader
@@ -395,3 +395,105 @@ def build_model_resNet(net_type, data_dir, inp_size, n_classes):
 
 
     return resnet, dataloader_dict, criterion, optimizer#, exp_lr_scheduler   
+
+
+
+
+
+
+def build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes):
+    # import pdb; pdb.set_trace()
+
+    INPUT_SIZE = inp_size
+    NUM_CLASSES = 10
+
+
+    transform = transforms.Compose([
+        transforms.Resize((INPUT_SIZE, INPUT_SIZE)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.3403, 0.3121, 0.3214),
+                             (0.2724, 0.2608, 0.2669))
+    ])
+
+
+#     import pdb; pdb.set_trace()
+    train_list = make_datapath_list("train")
+    val_list = make_datapath_list("val")
+
+    # Create dataset objects
+    train_dataset = Dataset_CIFAR10(phase='train', net_type=net_type, transform=transform)
+    val_dataset = Dataset_CIFAR10(phase='val', net_type=net_type, transform=transform)
+
+    # Create dataloader objects
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=128, shuffle=False)
+
+    dataloader_dict = {'train': train_dataloader, 'val': val_dataloader}
+
+
+
+    # Build model
+    resnet = models.resnet18(pretrained=True)
+
+    # import pdb; pdb.set_trace()
+    if net_type == 'rgb':
+          # new_layer = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          # resnet.conv1 = new_layer
+        pass  
+
+        # resnet.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+    elif net_type in ['edge', 'gray']: # rgb_egde
+        with torch.no_grad():
+          new_layer = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          # new_layer.requires_grad = False
+          new_layer.weight[:,0] = torch.mean(resnet.conv1.weight, 1)#[:,None]
+         # resnet.conv1.weight = new_layer #nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          resnet.conv1 = new_layer
+
+    elif net_type == 'grayedge': # rgb + edge
+        with torch.no_grad():
+          new_layer = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          # new_layer.requires_grad = False
+          new_layer.weight[:,0] = torch.mean(resnet.conv1.weight, 1)#[:,None]
+          new_layer.weight[:,1] = torch.mean(resnet.conv1.weight, 1)#[:,None]
+         # resnet.conv1.weight = new_layer #nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          resnet.conv1 = new_layer
+
+
+    else: # rgb + edge
+        with torch.no_grad():
+          new_layer = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          # new_layer.requires_grad = False
+          new_layer.weight[:,:3] = resnet.conv1.weight.squeeze(1) 
+          new_layer.weight[:,3] = torch.mean(resnet.conv1.weight, 1)#[:,None]
+         # resnet.conv1.weight = new_layer #nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+          resnet.conv1 = new_layer
+
+        # resnet.conv1 = nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)    
+
+    
+    
+    # freeze all model parameters
+    # for param in resnet.parameters():
+    #     param.requires_grad = False
+
+    resnet.conv1.requires_grad = True
+
+    # new final layer with 16 classes
+    num_ftrs = resnet.fc.in_features
+    resnet.fc = torch.nn.Linear(num_ftrs, NUM_CLASSES)
+
+    criterion = torch.nn.CrossEntropyLoss()
+    # optimizer = torch.optim.SGD([resnet.fc.parameters(), resnet.conv1.weight], lr=0.001, momentum=0.9)
+    
+    optimizer = torch.optim.SGD(resnet.parameters(), lr=0.001, momentum=0.9)
+    
+
+    # optimizer = torch.optim.SGD(list(resnet.fc.parameters()) + list(resnet.conv1.parameters()), lr=0.001, momentum=0.9)    
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    # print(resnet)
+    print('Model loaded ...')
+
+
+    return resnet, dataloader_dict, criterion, optimizer#, exp_lr_scheduler   
+

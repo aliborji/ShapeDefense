@@ -1,6 +1,6 @@
 from lib import *
 from config import *
-from model import build_model, build_model_resNet
+from model import build_model, build_model_resNet_CIFAR10
 from utils import * 
 import torchattacks
 from torchattacks import PGD, FGSM
@@ -26,29 +26,32 @@ train_phase = True
 # you also need to set the edge_detect in config!!!!!
 
 attack_type = 'FGSM'
-net_type = 'edge'
-data_dir = 'tiny-imagenet-200'
-inp_size = 128
-n_classes = 200
+net_type = 'rgb'
+data_dir = 'cifar10'
+inp_size = 64
+n_classes = 10
 
 
 
+if not os.path.isdir(f'./{attack_type}-{data_dir}'):
+    os.mkdir(f'./{attack_type}-{data_dir}')
+    os.mkdir(f'./{attack_type}-{data_dir}/results')
 
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 net_type = net_type.lower()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-fo = open(f'./{attack_type}-tinyImgnet/results/results_{net_type}.txt', 'w+')
+fo = open(f'./{attack_type}-{data_dir}/results/results_{net_type}.txt', 'w+')
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Train a model first
-save_path = f'tinyImgnet_{net_type}.pth'
+save_path = f'{data_dir}_{net_type}.pth'
 
 
 if train_phase:
     # pass
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     net.to(device)
     train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
@@ -58,7 +61,7 @@ if train_phase:
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 # Test the clean model on clean and attacks
-net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+net, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
 load_model(net, save_path)
 net.to(device)
 
@@ -76,9 +79,8 @@ for eps_t in [8,32]:
 
     epsilons = [eps_t/255]
 
-
     # Test the clean model on clean and attacks
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net, save_path)
     net.to(device)
 
@@ -87,7 +89,7 @@ for eps_t in [8,32]:
     fo.write('Accuracy of clean model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net, save_path)
     net.to(device)
 
@@ -99,18 +101,18 @@ for eps_t in [8,32]:
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Now perform adversarial training
-    save_path_robust = f'./{attack_type}-tinyImgnet/tinyImgnet_{net_type}_{eps_t}_robust_{eps_t}.pth'
+    save_path_robust = f'./{attack_type}-{data_dir}/{data_dir}_{net_type}_{eps_t}_robust_{eps_t}.pth'
 
     if train_phase:
         # pass    
-        net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+        net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
         net_robust.to(device)
         train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=False)
 
 
     # --------------------------------------------------------------------------------------------------------------------------------------------
     # Test the robust model on clean and attacks
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -118,7 +120,7 @@ for eps_t in [8,32]:
     print('Accuracy of robust model on clean images: %f %%' % acc)
     fo.write('Accuracy of robust model on clean images: %f \n' % acc)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust)
     net_robust.to(device)
 
@@ -127,7 +129,7 @@ for eps_t in [8,32]:
     fo.write('Accuracy of robust model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
     
@@ -144,14 +146,14 @@ for eps_t in [8,32]:
 
     if net_type != 'rgbedge': continue
 
-    save_path_robust = f'./{attack_type}-tinyImgnet/tinyImgnet_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
+    save_path_robust = f'./{attack_type}-{data_dir}/{data_dir}_{net_type}_{eps_t}_robust_{eps_t}_redetect.pth'
 
     if train_phase:
-        net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+        net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
         net_robust.to(device)
         train_robust_model(net_robust, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path_robust, attack_type, eps=eps_t/255, net_type=net_type, redetect_edge=True)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -159,7 +161,7 @@ for eps_t in [8,32]:
     print('Accuracy of robust redetect model on clean images: %f %%' % acc)
     fo.write('Accuracy of robust redetect model on clean images: %f \n' % acc)
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust) 
     net_robust.to(device)
 
@@ -168,7 +170,7 @@ for eps_t in [8,32]:
     fo.write('Accuracy of robust redetect  model on adversarial images: %f \n' % acc_attack[0])
 
 
-    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    net_robust, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes)
     load_model(net_robust, save_path_robust)
     net_robust.to(device)
     

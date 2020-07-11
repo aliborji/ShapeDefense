@@ -15,7 +15,11 @@ STD = (1.0,1.0,1.0)
 
 import edge_detector 
 # edge_detect = None
-edge_detect = edge_detector.detect_edge_gtsrb
+
+# edge_detect = edge_detector.detect_edge_gtsrb
+
+edge_detect = edge_detector.detect_edge_tiny
+
 # save_path_rgb = './dogs_cats_rgb.pth'
 # save_path_edge = './dogs_cats_edge.pth'
 # save_path_rgbedge = './dogs_cats_rgbedge.pth'

@@ -45,6 +45,7 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
                 continue
 
             for inputs, labels in tqdm(dataloader_dict[phase]):
+                # import pdb; pdb.set_trace()
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -133,7 +134,7 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
 
                     # with newly computed edge map  
                     # if (net_type not in ['rgb', 'gray', 'edge']) and redetect_edge: # for 
-                    if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
+                    if (net_type in ['rgbedge', 'qe']) and redetect_edge: # for 
                         inputs_adv = detect_edge_batch(inputs_adv);
                         # pass
 
