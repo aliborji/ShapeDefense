@@ -26,9 +26,9 @@ train_phase = True
 # you also need to set the edge_detect in config!!!!!
 
 attack_type = 'FGSM'
-net_type = 'edge'
-data_dir = 'imagenette2-160'
-inp_size = 160
+net_type = 'rgbedge'
+data_dir = 'NWPU-RESISC45'
+inp_size = 128
 n_classes = 45
 
 

@@ -39,7 +39,7 @@ save_path = f'dogs_{net_type}.pth'
 
 if train_phase:
     # pass
-    net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/')
+    net, dataloader_dict, criterior, optimizer = build_model_dogs(net_type, './dog-breed-identification/', inp_size)
     net.to(device)
     train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 

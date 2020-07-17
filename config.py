@@ -18,7 +18,12 @@ import edge_detector
 
 # edge_detect = edge_detector.detect_edge_gtsrb
 
-edge_detect = edge_detector.detect_edge_tiny
+# edge_detect = edge_detector.detect_edge_tiny
+
+
+edge_detect = edge_detector.compute_energy_matrix
+
+
 
 # save_path_rgb = './dogs_cats_rgb.pth'
 # save_path_edge = './dogs_cats_edge.pth'

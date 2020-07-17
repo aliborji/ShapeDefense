@@ -196,7 +196,7 @@ class Dataset_FashionMNIST(data.Dataset):
 
 class DogsDataset(data.Dataset):
     # for dog breed classification
-    def __init__(self, labels, root_dir, edge_dir, subset=False, transform=None, net_type='rgb'):
+    def __init__(self, labels, root_dir, edge_dir, subset=False, transform=None, net_type='rgb', inp_size=None):
         self.labels = labels
         self.root_dir = root_dir
         self.edge_dir = edge_dir        
@@ -204,8 +204,8 @@ class DogsDataset(data.Dataset):
         self.net_type = net_type                
 #         self.phase = phase                        
     
-        self.edge_transform = transforms.Compose([transforms.Scale(224),
-                                   transforms.CenterCrop(224),
+        self.edge_transform = transforms.Compose([transforms.Scale(inp_size),
+                                   transforms.CenterCrop(inp_size),
                                    transforms.ToTensor()])    
     
     def __len__(self):

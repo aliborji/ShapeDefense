@@ -132,8 +132,9 @@ def build_model_mnist(net_type):
     val_dataset = Dataset_MNIST(phase='val', net_type=net_type)
 
     # Create dataloader objects
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, BATCH_SIZE, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, BATCH_SIZE, shuffle=False)
+
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100 , shuffle=True)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=100, shuffle=False)
 
     dataloader_dict = {'train': train_dataloader, 'val': val_dataloader}
 
@@ -167,8 +168,8 @@ def build_model_fashion_mnist(net_type):
     val_dataset = Dataset_FashionMNIST(phase='val', net_type=net_type)
 
     # Create dataloader objects
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, BATCH_SIZE, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, BATCH_SIZE, shuffle=False)
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=100, shuffle=False)
 
     dataloader_dict = {'train': train_dataloader, 'val': val_dataloader}
 
@@ -193,9 +194,9 @@ def build_model_fashion_mnist(net_type):
 
 
 
-def build_model_dogs(net_type, data_dir):
+def build_model_dogs(net_type, data_dir, inp_size):
 
-    INPUT_SIZE = 224
+    INPUT_SIZE = inp_size
     NUM_CLASSES = 16
 #     data_dir = './dog-breed-identification/'
     labels = pd.read_csv(osp.join(data_dir, 'labels.csv'))
@@ -225,12 +226,20 @@ def build_model_dogs(net_type, data_dir):
        mean=[0.485, 0.456, 0.406],
        std=[0.229, 0.224, 0.225]
     )
-    ds_trans = transforms.Compose([transforms.Scale(224),
-                                   transforms.CenterCrop(224),
-                                   transforms.ToTensor(),
-                                   normalize])
-    train_ds = DogsDataset(train, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type)
-    valid_ds = DogsDataset(valid, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type)
+    # ds_trans = transforms.Compose([transforms.Scale(224),
+    #                                transforms.CenterCrop(224),
+    #                                transforms.ToTensor(),
+    #                                normalize])
+
+    ds_trans = transforms.Compose([
+        transforms.Resize((INPUT_SIZE, INPUT_SIZE)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.3403, 0.3121, 0.3214),
+                             (0.2724, 0.2608, 0.2669))
+    ])
+
+    train_ds = DogsDataset(train, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
+    valid_ds = DogsDataset(valid, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
     # test is over the validation set
 
     train_dataloader = DataLoader(train_ds, batch_size=4, shuffle=True, num_workers=4)
@@ -243,7 +252,7 @@ def build_model_dogs(net_type, data_dir):
     # Build model
     resnet = models.resnet18(pretrained=False)
     # resnet = models.resnet18(pretrained=True)  
-    resnet.load_state_dict(torch.load('./dog-breed-identification/resnet18-5c106cde.pth')) #resnet50-19c8e357.pth'))
+    resnet.load_state_dict(torch.load(data_dir + '/resnet18-5c106cde.pth')) #resnet50-19c8e357.pth'))
 
     # import pdb; pdb.set_trace()
     if net_type == 'rgb':

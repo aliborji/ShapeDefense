@@ -26,7 +26,7 @@ train_phase = True
 # you also need to set the edge_detect in config!!!!!
 
 attack_type = 'FGSM'
-net_type = 'rgbedge'
+net_type = 'edge'
 data_dir = 'imagenette2-160'
 inp_size = 160
 n_classes = 10
@@ -47,10 +47,10 @@ save_path = f'{data_dir}_{net_type}.pth'
 
 
 if train_phase:
-    # pass
-    net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
-    net.to(device)
-    train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
+    pass
+    #net, dataloader_dict, criterior, optimizer = build_model_resNet(net_type, data_dir, inp_size, n_classes)
+    #net.to(device)
+    #train_model(net, dataloader_dict, criterior, optimizer, NUM_EPOCHS, save_path)
 
 
 
