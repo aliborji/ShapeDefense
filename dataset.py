@@ -11,6 +11,7 @@ from config import *
 from edge_detector import *
 
 
+
 class MyDataset(data.Dataset):
     def __init__(self, file_list, transform=None, phase='train', net_type='rgb'):
         self.file_list = file_list
@@ -64,9 +65,9 @@ class Dataset_MNIST(data.Dataset):
                         transforms.ToTensor(),
                         ]))        
         
-        self.data = datasets.MNIST('../data', train = phase=='train', download=True, transform=transforms.Compose([
-                        transforms.ToTensor(),
-                        ]))        
+        # self.data = datasets.MNIST('../data', train = phase=='train', download=True, transform=transforms.Compose([
+        #                 transforms.ToTensor(),
+        #                 ]))        
 #         self.transform = transform
         self.phase = phase
         self.net_type = net_type        
@@ -93,9 +94,11 @@ class Dataset_MNIST(data.Dataset):
         
         else: # gray + edge
             # borji
+            # print(img.shape)
             edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            # print(edge_map.shape)
             img = torch.cat((img, edge_map),dim=0)#[None]
         
 
@@ -106,13 +109,15 @@ class Dataset_MNIST(data.Dataset):
 
 class Dataset_CIFAR10(data.Dataset):
     def __init__(self, transform=None, phase='train', net_type='rgb'):
-        self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
-                        transforms.ToTensor(),
-                        ]))        
+        self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transform)        
+
+        # self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
+        #                 transforms.ToTensor(),
+        #                 ]))        
         
-        self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
-                        transforms.ToTensor(),
-                        ]))        
+        # self.data = datasets.CIFAR10('../data', train = phase=='train', download=True, transform=transforms.Compose([
+        #                 transforms.ToTensor(),
+        #                 ]))        
 #         self.transform = transform
         self.phase = phase
         self.net_type = net_type        
@@ -135,14 +140,16 @@ class Dataset_CIFAR10(data.Dataset):
             edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            img = edge_map#[None]
+            img = edge_map[None]
         
         else: # gray + edge
             # borji
             edge_map = edge_detect(img)
-            edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
+            # edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            img = torch.cat((img, edge_map),dim=0)#[None]
+            # print(img.shape)
+            # print(edge_map.shape)
+            img = torch.cat((img, edge_map[None]),dim=0)#[None]
         
 
 
@@ -157,9 +164,9 @@ class Dataset_FashionMNIST(data.Dataset):
                         transforms.ToTensor(),
                         ]))        
         
-        self.data = datasets.FashionMNIST('../data', train = phase=='train', download=True, transform=transforms.Compose([
-                        transforms.ToTensor(),
-                        ]))        
+        # self.data = datasets.FashionMNIST('../data', train = phase=='train', download=True, transform=transforms.Compose([
+        #                 transforms.ToTensor(),
+        #                 ]))        
 #         self.transform = transform
         self.phase = phase
         self.net_type = net_type        
@@ -186,6 +193,8 @@ class Dataset_FashionMNIST(data.Dataset):
             edge_map = edge_detect(img)
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())            
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
+            # print(edge_map.shape)
+            # print(img.shape)
             img = torch.cat((img, edge_map), dim=0)#[None]
         
 
@@ -313,11 +322,14 @@ class folderDB(Dataset):
 
 
         else: # rgb + edge
+            # print(img.shape)
             edge_map = edge_detect(img)
+            # print(edge_map.shape)
             edge_map = torch.tensor(edge_map, dtype=torch.float32)
             if (edge_map.max() - edge_map.min()) > 0:
                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
 
+            # print(img.shape)        
             img = torch.cat((img, edge_map[None]),dim=0)      
 
 

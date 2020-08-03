@@ -15,27 +15,20 @@ from networks import define_G, define_D, GANLoss, get_scheduler, update_learning
 
 import sys
 sys.path.insert(0,'..')
+from utils import detect_edge_batch
 
 ###############  IMPORTANT: Specify your edge detector here #######################################################
-from edge_detector import *
-edge_detect = compute_energy_matrix
+from edge_detector import detect_edge_mnist
 ###################################################################################################################
 
 # from config import *
 from dataset import MyDataset, Dataset_MNIST, Dataset_FashionMNIST, DogsDataset, folderDB, Dataset_CIFAR10
-from model import build_model, build_model_mnist, build_model_dogs
-from utils import detect_edge_batch
-
-
-
-
-
+from model import model_dispatcher
 
 
 
 # Training settings
 parser = argparse.ArgumentParser(description='pix2pix-pytorch-implementation')
-# parser.add_argument('--dataset', required=True, help='facades')
 parser.add_argument('--batch_size', type=int, default=1, help='training batch size')
 parser.add_argument('--test_batch_size', type=int, default=1, help='testing batch size')
 parser.add_argument('--direction', type=str, default='b2a', help='a2b or b2a')
@@ -56,12 +49,19 @@ parser.add_argument('--seed', type=int, default=123, help='random seed to use. D
 parser.add_argument('--lamb', type=int, default=10, help='weight on L1 term in objective')
 parser.add_argument('--dataset', required=True, help='facades')
 
+parser.add_argument('--net_type', type=str, default='rgb', help='edge, rgb, grayedge, rgbedge')
+parser.add_argument('--data_dir', type=str, default='MNIST', help='data directory')
+# parser.add_argument('--model', type=str, default='mnist', help='which model implemented in model.py')
+parser.add_argument('--classes', type=int, default=10, help='number of classes')
+parser.add_argument('--inp_size', type=int, default=28, help='size of the input image')
 
+
+# EXAMPLES
 # python train.py --niter 2 --niter_decay 1 --input_nc 1 --output_nc 1 --ngf 10 --ndf 10 --dataset mnist
 
 
-opt = parser.parse_args()
 
+opt = parser.parse_args()
 print(opt)
 
 if opt.cuda and not torch.cuda.is_available():
@@ -76,15 +76,38 @@ if opt.cuda:
 print('===> Loading datasets')
 root_path = "dataset/"
 
+
+
+
+net_type = opt.net_type #'grayedge'
+data_dir = opt.data_dir #'MNIST'
+# which_model = opt.model #'mnist'
+n_classes = opt.classes # 10
+inp_size = opt.inp_size# 28
+
+
+
 # train_set = get_training_set(root_path + opt.dataset, opt.direction)
 # test_set = get_test_set(root_path + opt.dataset, opt.direction)
 # training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batch_size, shuffle=True)
 # testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.test_batch_size, shuffle=False)
 
 
-# _, dataloader_dict, _, _ = build_model_mnist(net_type='gray')
+# if opt.dataset.lower() == 'mnist':
+#     edge_detect = detect_edge_mnist    
+#     _, dataloader_dict, _, _ = build_model_mnist(net_type='grayedge')
 
-_, dataloader_dict, _, _ = build_model_dogs('rgbedge', '../dog-breed-identification/', 64)
+
+# elif opt.dataset.lower() == 'fashionmnist':
+#     edge_detect = detect_edge_mnist    
+#     _, dataloader_dict, _, _ = build_model_fashion_mnist(net_type='grayedge')
+
+
+# elif opt.dataset.lower() == 'dogs':    
+#     _, dataloader_dict, _, _ = build_model_dogs('rgbedge', '../dog-breed-identification/', 128)
+
+_, dataloader_dict, _, _ = model_dispatcher(opt.dataset,  'rgbedge', data_dir, inp_size, n_classes)
+
 
 
 training_data_loader = dataloader_dict['train']
@@ -114,12 +137,14 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
         # forward
 
         real_b = batch[0]
-        real_b = detect_edge_batch(real_b) # detect edges
+        # import pdb; pdb.set_trace()
+        # real_b = detect_edge_batch(real_b) # detect edges
 
-        real_a = real_b[:,3].unsqueeze(1) # only the edge map
-        real_b = real_b[:,:3]
+        real_a = real_b[:,-1].unsqueeze(1) # only the edge map
+        real_b = real_b[:,:-1]
         real_b = (real_b - real_b.min()) / (real_b.max() - real_b.min())
         # print(real_b.shape)
+        
         
         # real_a = torch.cat([real_a, real_a, real_a], 1)
         # real_b = torch.cat([real_b, real_b, real_b], 1)        
@@ -184,8 +209,8 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
         real_b = batch[0]
         real_b = detect_edge_batch(real_b) # detect edges
 
-        real_a = real_b[:,3].unsqueeze(1) # only the edge map
-        real_b = real_b[:,:3]
+        real_a = real_b[:,-1].unsqueeze(1) # only the edge map
+        real_b = real_b[:,:-1]
         real_b = (real_b - real_b.min()) / (real_b.max() - real_b.min())        
 
         input = real_a

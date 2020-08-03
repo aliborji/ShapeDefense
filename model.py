@@ -13,13 +13,36 @@ from torch.optim import lr_scheduler
 from time import time
 
 
+
+def model_dispatcher(whichModel, *argv):
+    if whichModel.lower() == 'mnist':
+        net, dataloader_dict, criterior, optimizer = build_model_mnist(argv[0])
+
+    elif whichModel.lower() == 'fashionmnist':
+        net, dataloader_dict, criterior, optimizer = build_model_fashion_mnist(argv[0])
+
+    elif whichModel.lower() == 'dogbreeds':
+        net, dataloader_dict, criterior, optimizer = build_model_dogs(*argv[:3])
+
+    elif whichModel.lower() == 'dogvscat':
+        net, dataloader_dict, criterior, optimizer = build_model_dog_cat(*argv)
+
+    elif whichModel.lower() in ['gtsrb', 'icons', 'sketch', 'imagenette', 'tinyimagenet']:
+        net, dataloader_dict, criterior, optimizer = build_model_resNet(*argv)
+
+    elif whichModel.lower() == 'cifar10':
+        net, dataloader_dict, criterior, optimizer = build_model_resNet_CIFAR10(*argv)
+
+    return net, dataloader_dict, criterior, optimizer  
+
+
 # Binary network used for dog vs cat classification
 class Net(nn.Module):
     def __init__(self, net_type):
         super(Net, self).__init__()
         if net_type == 'rgb':
             self.conv1 = nn.Conv2d(3, 32, 3)        
-        elif net_type == 'edge': # rgb_egde
+        elif net_type == 'edge': 
             self.conv1 = nn.Conv2d(1, 32, 3)        
         else: # rgb + edge
             self.conv1 = nn.Conv2d(4, 32, 3)  
@@ -63,10 +86,15 @@ class Net(nn.Module):
         return num_features
 
 
-def build_model(net_type):
+def build_model_dog_cat(net_type):
 #     import pdb; pdb.set_trace()
     train_list = make_datapath_list("train")
     val_list = make_datapath_list("val")
+
+    WIDTH = 150
+    HEIGHT = 150
+    MEAN = (1./255,1./255,1./255)
+    STD = (1.0,1.0,1.0)
 
     # Create dataset objects
     train_dataset = MyDataset(train_list, ImageTransform((HEIGHT, WIDTH), MEAN, STD), phase='train', net_type=net_type)
@@ -105,7 +133,6 @@ class MNIST_Net(nn.Module):
         else: # gray + edge
             self.conv1 = nn.Conv2d(2, 10, kernel_size=5)
 
-        # self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
@@ -238,8 +265,8 @@ def build_model_dogs(net_type, data_dir, inp_size):
                              (0.2724, 0.2608, 0.2669))
     ])
 
-    train_ds = DogsDataset(train, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
-    valid_ds = DogsDataset(valid, data_dir+'traincrop/', data_dir+'traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
+    train_ds = DogsDataset(train, data_dir+'/traincrop/', data_dir+'/traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
+    valid_ds = DogsDataset(valid, data_dir+'/traincrop/', data_dir+'/traincropedgesobel/', transform=ds_trans, net_type=net_type, inp_size=INPUT_SIZE)
     # test is over the validation set
 
     train_dataloader = DataLoader(train_ds, batch_size=4, shuffle=True, num_workers=4)
@@ -402,7 +429,7 @@ def build_model_resNet(net_type, data_dir, inp_size, n_classes):
     # print(resnet)
     print('Model loaded ...')
 
-
+ 
     return resnet, dataloader_dict, criterion, optimizer#, exp_lr_scheduler   
 
 
@@ -410,7 +437,7 @@ def build_model_resNet(net_type, data_dir, inp_size, n_classes):
 
 
 
-def build_model_resNet_CIFAR10(net_type, data_dir, inp_size, n_classes):
+def build_model_resNet_CIFAR10(net_type='rgb', data_dir='', inp_size='32', n_classes=10):
     # import pdb; pdb.set_trace()
 
     INPUT_SIZE = inp_size

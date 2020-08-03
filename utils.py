@@ -2,7 +2,7 @@ from lib import *
 from config import *
 from edge_detector import *
 import torchattacks
-import copy
+# import copy
 from torchattacks import PGD, FGSM
 import time
 import numpy as np
@@ -43,11 +43,11 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
             epoch_loss = 0.0
             epoch_corrects = 0
 
-            if (epoch == 0) and (phase == 'train'):
-                continue
+            # if (epoch == 0) and (phase == 'train'):
+            #     continue
 
             for inputs, labels in tqdm(dataloader_dict[phase]):
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -55,7 +55,7 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
 
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = net(inputs)
-                    labels = labels
+                    # labels = labels
                     loss = criterior(outputs, labels)
                     _, preds = torch.max(outputs, axis=1)
 
@@ -74,8 +74,6 @@ def train_model(net, dataloader_dict, criterior, optimizer, num_epochs, save_pat
 
     torch.save(net.state_dict(), save_path)
 
-    
-    
 
 
 # Train model
@@ -115,8 +113,8 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
             epoch_corrects = 0
             epoch_corrects_adv = 0
 
-            if (epoch == 0) and (phase == 'train'):
-                continue
+            # if (epoch == 0) and (phase == 'train'):
+            #     continue
 
             for inputs, labels in dataloader_dict[phase]:
                 # import pdb; pdb.set_trace()
@@ -136,7 +134,7 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
 
                     # with newly computed edge map  
                     # if (net_type not in ['rgb', 'gray', 'edge']) and redetect_edge: # for 
-                    if (net_type in ['rgbedge', 'qe']) and redetect_edge: # for 
+                    if (net_type in ['rgbedge', 'greyedge']) and redetect_edge: # for 
                         inputs_adv = detect_edge_batch(inputs_adv);
                         # pass
 
@@ -165,11 +163,7 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
 
             print("{} Loss: {:.4f}, Acc: {:.4f}, Acc_adv: {:.4f}".format(phase, epoch_loss, epoch_accuracy, epoch_accuracy_adv))
 
-#     import pdb; pdb.set_trace()
-
     torch.save(net.state_dict(), save_path)
-#     return net
-
 
 
 
@@ -232,6 +226,7 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
             outputs = net(images)
 
             if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # for 
+              # import pdb;pdb.set_trace()
               images = detect_edge_batch(images)
               outputs = net(images)
 
@@ -248,32 +243,138 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
 
 
 
+
+
+
+# Train model
+def train_substitue_model(net, substitute_net, dataloader_dict, optimizer, num_epochs, save_path):
+
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+    substitute_net.to(device)
+
+    # boost network speed on gpu
+    torch.backends.cudnn.benchmark = True
+
+
+    substitute_net.train()
+    net.eval()
+
+    phase = 'train'
+
+    loss_fn = nn.BCELoss()    
+    softmax = nn.Softmax()
+
+    # optimizer = optim.Adadelta(substitute_net.parameters())
+
+    for epoch in range(num_epochs):
+        print("Epoch {}/{}".format(epoch+1, num_epochs))
+
+        epoch_loss = 0.0
+        epoch_corrects = 0
+
+        for inputs, labels in tqdm(dataloader_dict[phase]):
+            # import pdb; pdb.set_trace()
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            optimizer.zero_grad()
+
+            with torch.set_grad_enabled(phase == 'train'):
+                outputs_sub = substitute_net(inputs[:,:-1]) # outputs_sub is the logits now; substitute model is only trained on img channels not edge map
+                outputs = net(inputs)
+
+                # loss = criterior(outputs, labels)
+                # import pdb; pdb.set_trace()
+                loss = loss_fn(softmax(outputs_sub), softmax(outputs.detach()))        
+                _, preds = torch.max(outputs_sub, axis=1)
+
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss += loss.item() * inputs.shape[0]
+                epoch_corrects += torch.sum(preds==labels.data)
+
+
+        epoch_loss = epoch_loss / len(dataloader_dict[phase].dataset)
+        epoch_accuracy = epoch_corrects.double() / len(dataloader_dict[phase].dataset)
+
+        print("{} Loss: {:.4f}, Acc: {:.4f}".format(phase, epoch_loss, epoch_accuracy))
+
+    torch.save(substitute_net.state_dict(), save_path)
+
+
+
+
+def test_model_BPDA_attack(net, substitute_net, dataloader_dict, epsilons, attack_type = 'FGSM', redetect_edge=True):
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+    substitute_net.to(device)
+
+    net.eval()
+    substitute_net.eval()
+
+    accuracies = []; examples = []
+
+    for eps in epsilons:
+
+        if attack_type.upper() == 'FGSM':
+            attack = FGSM(substitute_net, eps=eps)    
+        else:    
+            attack = PGD(substitute_net, eps=eps, alpha=8/255, iters=40)      
+        
+            
+        correct = 0; total = 0;       
+
+        # import pdb; pdb.set_trace()
+        for images, labels in dataloader_dict['val']:
+            images, labels = images.to(device), labels.to(device)         
+            # images = (images-images.min()) / (images.max()-images.min())                
+            images_attacked = attack(images[:,:-1], labels)#.cuda() # exclude the edge map; attack Image part only
+            # images = attack(images, labels)#.cuda() # exclude the edge map
+
+            # outputs = net(images)
+
+            # if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # BPDA is only for x+edge models
+              # import pdb;pdb.set_trace()
+            import pdb; pdb.set_trace()
+            # edge_maps = torch.zeros((images.shape[0],1,images.shape[2],images.shape[2]))              
+            # data = torch.cat((images_attacked, edge_maps),dim=1)#[None]
+            images[:,:-1] = images_attacked # replace the healthy image with attacked one
+            if redetect_edge:
+                images = detect_edge_batch(images) # compute the edge from the image and append it back; make sure EDGE_ALL_CHANNELS in config.py is False!!!
+            outputs = net(images)
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum()
+
+        acc = float(correct) / total
+        accuracies.append(acc)
+
+    return accuracies, images    
+
+
+
+
+
+
+
+
+
 def load_model(net, model_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
     load_weights = torch.load(model_path, map_location=device)
     net.load_state_dict(load_weights)
-
-    # train on gpu, load model on cpu machine
-    # load_weights = torch.load(model_path, map_location=("cuda:0", "cpu"))
-    # net.load_state_dict(load_weights)
-    
-    # display fine-tuning model's architecture
-#     for name, param in net.named_parameters():
-#         print(name, param)
-#     return net
-        
-        
-
-# def detect_edge(img):        
-#     # borji
-#     edge_map = detect_edge_new(img.permute(1,2,0)) # make it [x,y,3]!!!
-#     edge_map = edge_map/255.
-#     edge_map = torch.tensor(edge_map, dtype=torch.float32)
-    
-#     return edge_map
-    
-    
 
 
 
@@ -283,7 +384,12 @@ def detect_edge_batch(imgs):
     # import pdb; pdb.set_trace()
 
     for im in imgs:
-        edge_map = edge_detect(im) 
+        if EDGE_ALL_CHANNELS:
+            edge_map = edge_detect(im) # discard the last channel since it already has an edge map!! which we want to replace        
+        else:    
+            edge_map = edge_detect(im[:-1]) # discard the last channel since it already has an edge map!! which we want to replace
+
+        # import pdb; pdb.set_trace()
         # edge_map = edge_map/255.
         if (edge_map.max() - edge_map.min()) > 0:
             edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
@@ -291,51 +397,6 @@ def detect_edge_batch(imgs):
         im[-1] = edge_map # replace the last map
     
     return imgs
-
-
-def detect_edge_batch_pix_to_pix(imgs):        
-    # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
-    # FOR THAT, YOU MAY ALSO NEED TO CHANGE THE SOME PARAMETERS; SEE EDGE_DETECTOR.PY
-    # import pdb; pdb.set_trace()
-
-    for im in imgs:
-        edge_map = edge_detect(im) 
-        # edge_map = edge_map/255.
-        if (edge_map.max() - edge_map.min()) > 0:
-            edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
-        edge_map = torch.tensor(edge_map, dtype=torch.float32)
-        # print(edge_map.shape)
-        # im = torch.zeros((edge_map.shape[0], edge_map.shape[1]))
-        im[-1] = edge_map # replace the last map
-    
-    return imgs
-
-
-
-# def detect_edge_batch(imgs):        
-#     # YOU MAY NEED TO MODIFY THIS FUNCTION IN ORDER TO CHOOSE THE BEST EDGE DETECTION THAT WORKS ON YOUR DATA
-#     # FOR THAT, YOU MAY ALSO NEED TO CHANGE THE SOME PARAMETERS; SEE EDGE_DETECTOR.PY
-#     # import pdb; pdb.set_trace()
-#     if imgs[0].shape[-1] == 28: # hence mnist
-#         for im in imgs:
-#             edge_map = detect_edge_mnist(im[0][None])[0] 
-#             edge_map = edge_map/255.
-#             if (edge_map.max() - edge_map.min()) > 0:
-#                 edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())        
-#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-#             im[1] = edge_map
-#     else:        
-#         for im in imgs:
-#             # import pdb; pdb.set_trace()
-#             edge_map = detect_edge_new(im[:3].permute(1,2,0)) # make it XxYx3!!! # CANNY
-#             # edge_map = compute_energy_matrix(im[:3].permute(1,2,0)) # make it XxYx3!!!  # SOBEL
-#             edge_map = edge_map/255.
-#             edge_map = torch.tensor(edge_map, dtype=torch.float32)
-            
-
-#             im[3] = edge_map
-    
-#     return imgs
 
     
     
@@ -347,10 +408,6 @@ def imshow(img, title):
     plt.xticks([])
     plt.yticks([])
     plt.show()
-
-
-
-
 
 
 def is_image_file(filename):
@@ -371,70 +428,3 @@ def save_img(image_tensor, filename):
     image_pil = Image.fromarray(image_numpy)
     image_pil.save(filename)
     print("Image saved as {}".format(filename))
-
-
-# def train_dog_model(dataloders, model, criterion, optimizer, scheduler, num_epochs=25):
-#     since = time.time()
-#     use_gpu = torch.cuda.is_available()
-#     best_model_wts = model.state_dict()
-#     best_acc = 0.0
-#     dataset_sizes = {'train': len(dataloders['train'].dataset), 
-#                      'val': len(dataloders['val'].dataset)}
-
-#     for epoch in range(num_epochs):
-#         for phase in ['train', 'val']:
-#             if phase == 'train':
-#                 scheduler.step()
-#                 model.train(True)
-#             else:
-#                 model.train(False)
-
-#             running_loss = 0.0
-#             running_corrects = 0
-
-#             for inputs, labels in dataloders[phase]:
-#                 if use_gpu:
-#                     inputs, labels = inputs.cuda(), labels.cuda()
-#                 # else:
-#                 #     inputs, labels = inputs, Variable(labels)
-
-#                 optimizer.zero_grad()
-
-#                 outputs = model(inputs)
-#                 _, preds = torch.max(outputs.data, 1)
-#                 loss = criterion(outputs, labels)
-
-#                 if phase == 'train':
-#                     loss.backward()
-#                     optimizer.step()
-
-#                 running_loss += loss.item() #.data[0]
-#     #                 import pdb; pdb.set_trace()
-#                 running_corrects += torch.sum(preds == labels.data)/1.
-            
-#             if phase == 'train':
-#                 train_epoch_loss = running_loss / dataset_sizes[phase]
-#                 train_epoch_acc = running_corrects / dataset_sizes[phase]
-#             else:
-#                 valid_epoch_loss = running_loss / dataset_sizes[phase]
-#                 valid_epoch_acc = running_corrects / dataset_sizes[phase]
-                
-#             if phase == 'val' and valid_epoch_acc > best_acc:
-#                 best_acc = valid_epoch_acc
-#                 best_model_wts = model.state_dict()
-
-#         print('Epoch [{}/{}] train loss: {:.4f} acc: {:.4f} ' 
-#               'valid loss: {:.4f} acc: {:.4f}'.format(
-#                 epoch, num_epochs - 1,
-#                 train_epoch_loss, train_epoch_acc, 
-#                 valid_epoch_loss, valid_epoch_acc))
-            
-#     print('Best val Acc: {:4f}'.format(best_acc))
-
-#     model.load_state_dict(best_model_wts)
-#     return model
-        
-        
-        
-        
-        
