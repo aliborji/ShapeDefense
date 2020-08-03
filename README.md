@@ -1,4 +1,4 @@
-# Dogs vs. Cats using Pytorch
+# Shape Defence Pytorch
 
 In this project, I use Pytorch to implement a very simple VGG-based CNN model to classify dog/cat images of Kaggle's Dogs vs. Cats Dataset.
 
@@ -14,8 +14,8 @@ Environment: **Anaconda**, **Python 3.6**
 conda create -y --name py36 python==3.6
 conda install -f -y -q --name py36 -c conda-forge --file requirements.txt
 conda activate py36
-git clone https://github.com/baoanh1310/dogs_vs_cats_pytorch.git
-cd dogs_vs_cats_pytorch
+git clone https://github.com/aliborji/ShapeDefence.git
+cd ShapeDefence
 ```
 
 ### Running
