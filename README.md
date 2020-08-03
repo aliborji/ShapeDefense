@@ -2,11 +2,6 @@
 
 In this project, I use Pytorch to implement a very simple VGG-based CNN model to classify dog/cat images of Kaggle's Dogs vs. Cats Dataset.
 
-### Prerequisites
-
-My OS: **Ubuntu 18.04**
-
-Environment: **Anaconda**, **Python 3.6**
 
 ### Installing
 
