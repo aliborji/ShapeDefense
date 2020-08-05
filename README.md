@@ -1,7 +1,7 @@
-# Shape Defence Pytorch
+# Shape Defense Pytorch
 
 In this project, I use Pytorch to implement a very simple VGG-based CNN model to classify dog/cat images of Kaggle's Dogs vs. Cats Dataset.
-
+https://guides.github.com/activities/hello-world/
 
 ### Installing
 
