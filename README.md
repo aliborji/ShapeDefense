@@ -65,24 +65,6 @@ Please see the paper for more details.
 | FGSM     |       60.90% |                       43.46% |           12 |
 | Free     |       64.37% |                       43.31% |           52 |
 
-## But I've tried FGSM adversarial training before, and it didn't work! 
-In our experiments, we discovered several failure modes which would cause FGSM adversarial training to ``catastrophically fail'', like in the following plot. 
-
-
-
-If FGSM adversarial training hasn't worked for you in the past, then it may be because of one of the following reasons (which we present as a non-exhaustive list of ways to fail): 
-
-+ FGSM step size is too large, forcing the adversarial examples to cluster near the boundary
-+ Random initialization only covers a smaller subset of the threat model
-+ Long training with many epochs and fine tuning with very small learning rates
-
-All of these pitfalls can be avoided by simply using early stopping based on a subset of the training data to evaluate the robust accuracy with respect to PGD, as the failure mode for FGSM adversarial training occurs quite rapidly (going to 0% robust accuracy within the span of a couple epochs)
-
-
-
-## Why does this matter if I still want to use PGD adversarial training in my experiments? 
-
-The speedups gained from using mixed-precision arithmetic and cyclic learning rates can still be reaped regardless of what training regimen you end up using! For example, these techniques can speed up CIFAR10 PGD adversarial training by almost 2 orders of magnitude, reducing training time by about 3.5 days to just over 1 hour. The engineering costs of installing the `apex` library and changing the learning rate schedule are miniscule in comparison to the time saved from using these two techniques, and so even if you don't use FGSM adversarial training, you can still benefit from faster experimentation with the DAWNBench improvements. 
 
 
 
