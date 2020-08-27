@@ -51,7 +51,7 @@ This trains a robust model with the default parameters. The training parameters 
 
 ## Results over MNIST and CIFAR-10
 
-+ Performance of the model against $L_\inf$ 
++ Performance of the model against $L_\infty$ 
 Please see the paper for more details.
 
 |          | CIFAR-10 Acc | CIFAR10 Adv Acc (eps=8/255) | Time (minutes) | 
