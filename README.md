@@ -1,17 +1,12 @@
 # Shape Defense
 
-
-
-# Fast adversarial training using FGSM
-
 *A repository that implements the fast adversarial training code using an FGSM adversary, capable of training a robust CIFAR10 classifier in 6 minutes and a robust ImageNet classifier in 12 hours. Created by [Eric Wong](https://riceric22.github.io), [Leslie Rice](https://leslierice1.github.io/), and [Zico Kolter](http://zicokolter.com). See our paper on arXiv [here][paper], which was inspired by the free adversarial training paper [here][freepaper] by Shafahi et al. (2019).*
 
 [paper]: https://arxiv.org/abs/2001.03994
 [freepaper]: https://arxiv.org/abs/1904.12843
 
 ## News
-+ 12/19/2019 - Accepted to ICLR 2020
-+ 1/14/2019 - arXiv posted and repository release
++ 12/19/2019 - TBD
 
 ## What is in this repository? 
 + An implementation of the FGSM adversarial training method with randomized initialization for MNIST, CIFAR10, and ImageNet
