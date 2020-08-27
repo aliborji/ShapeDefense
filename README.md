@@ -20,9 +20,8 @@ It shows that incorporating edges to images followed by adversarial training and
 + 12/19/2019 - TBD
 
 ## Installation 
-1. Installation
-2. Install PyTorch.
-Install the required python packages. All packages can be installed by running the following command:
+1. Install PyTorch.
+2. Install the required python packages. All packages can be installed by running the following command:
 ```
 pip install -r requirements.txt
 ```
