@@ -29,7 +29,7 @@ pip install -r requirements.txt
 3. For each of the code repositories used, please see the accompanying readme files and original code bases.
 
 
-##  Training a model
+##  Training and evaluating a model
 To train a robust model run the following command:
 
 ```
@@ -49,12 +49,12 @@ This trains a robust model with the default parameters. The training parameters 
 
 
 
-## But wait, I thought FGSM training didn't work!
-As one of the earliest methods for generating adversarial examples, the Fast Gradient Sign Method (FGSM) is also known to be one of the weakest. It has largely been replaced by the PGD-based attacked, and it's use as an attack has become highly discouraged when [evaluating adversarial robustness](https://arxiv.org/abs/1902.06705). Afterall, early attempts at using FGSM adversarial training (including variants of randomized FGSM) were unsuccessful, and this was largely attributed to the weakness of the attack. 
+## Results over MNIST and CIFAR-10
 
-However, we discovered that a fairly minor modification to the random initialization for FGSM adversarial training allows it to perform as well as the much more expensive PGD adversarial training. This was quite surprising to us, and suggests that one does not need very strong adversaries to learn robust models! As a result, we pushed the FGSM adversarial training to the limit, and found that by incorporating various techniques for fast training used in the [DAWNBench](https://dawn.cs.stanford.edu/benchmark/) competition, we could learn robust architectures an order of magnitude faster than before, while achieving the same degrees of robustness. A couple of the results from the paper are highlighted in the table below. 
++ Performance of the model against $L_\inf$ 
+Please see the paper for more details.
 
-|          | CIFAR10 Acc | CIFAR10 Adv Acc (eps=8/255) | Time (minutes) | 
+|          | CIFAR-10 Acc | CIFAR10 Adv Acc (eps=8/255) | Time (minutes) | 
 | --------:| -----------:|----------------------------:|---------------:| 
 | FGSM     |      86.06% |                      46.06% |             12 |
 | Free     |      85.96% |                      46.33% |            785 |
