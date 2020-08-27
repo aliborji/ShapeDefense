@@ -1,4 +1,4 @@
-# Shape-based Fast adversarial training using FGSM
+# Shape-based Fast adversarial training using FGSM   &   Shape-based Free adversarial training
 Modified by Ali Borji 
 AUG 27 2020
 
@@ -7,6 +7,9 @@ Use evaluate_xx.py to evalauet a trained model.
 
 
 Following comes the readme from the original code.
+
+
+
 
 
 
