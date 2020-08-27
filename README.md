@@ -1,22 +1,53 @@
 # Shape Defense
 
-*A repository that implements the fast adversarial training code using an FGSM adversary, capable of training a robust CIFAR10 classifier in 6 minutes and a robust ImageNet classifier in 12 hours. Created by [Eric Wong](https://riceric22.github.io), [Leslie Rice](https://leslierice1.github.io/), and [Zico Kolter](http://zicokolter.com). See our paper on arXiv [here][paper], which was inspired by the free adversarial training paper [here][freepaper] by Shafahi et al. (2019).*
+* This repository includes the following:
++ Edge-guided Adversarial Training (EAT)
++ GAN-based Shape Defense (GSD)
++ Shape-based fast adversarial training
++ Shape-based free adversarial training
++ Robustness evaluation against natural image corruptions
 
-[paper]: https://arxiv.org/abs/2001.03994
-[freepaper]: https://arxiv.org/abs/1904.12843
+It shows that incorporating edges to images followed by adversarial training and edge redetection at inference time improves robustness drastically.
+
+![overfitting](https://github.com/aliborji/ShapeDefence/blob/master/teaser.jpg)
+
+
+[paper]: https://arxiv.org/abs/xx
+[fastpaper]: https://arxiv.org/abs/2001.03994
+
 
 ## News
 + 12/19/2019 - TBD
 
-## What is in this repository? 
-+ An implementation of the FGSM adversarial training method with randomized initialization for MNIST, CIFAR10, and ImageNet
-+ [Cyclic learning rates](https://arxiv.org/abs/1506.01186) and mixed precision training using the [apex](https://nvidia.github.io/apex/) library to achieve DAWNBench-like speedups 
-+ Pre-trained models using this code base
-+ The ImageNet code is mostly forked from the [free adversarial training repository](https://github.com/mahyarnajibi/FreeAdversarialTraining), with the corresponding modifications for fast FGSM adversarial training
+## Installation 
+1. Installation
+2. Install PyTorch.
+Install the required python packages. All packages can be installed by running the following command:
+```
+pip install -r requirements.txt
+```
+3. For each of the code repositories used, please see the accompanying readme files and original code bases.
 
-## Installation and usage
-+ All examples can be run without mixed-precision with PyTorch v1.0 or higher
-+ To use mixed-precision training, follow the apex installation instructions [here](https://github.com/NVIDIA/apex#quick-start)
+
+##  Training a model
+To train a robust model run the following command:
+
+```
+python train.py --net_type [NET_TYPE]
+
+ --model [MODEL_TYPE] --sigmas [LIST_OF_SIGMAS]  --data_dir [DATA_FOLDER]  --classes 10 --epochs 10 --inp_size 28 --load_model [LOAD_MODEL_IF_EXISTS_RESUME]
+```
+
+rgbedge
+fashionmnist
+8 32 64
+fashionmnist
+
+
+This trains a robust model with the default parameters. The training parameters can be set by changing the configs.yml config file. Please run python main_free.py --help to see the list of possible arguments. The script saves the trained models into the trained_models folder and the logs into the output folder.
+
+
+
 
 ## But wait, I thought FGSM training didn't work!
 As one of the earliest methods for generating adversarial examples, the Fast Gradient Sign Method (FGSM) is also known to be one of the weakest. It has largely been replaced by the PGD-based attacked, and it's use as an attack has become highly discouraged when [evaluating adversarial robustness](https://arxiv.org/abs/1902.06705). Afterall, early attempts at using FGSM adversarial training (including variants of randomized FGSM) were unsuccessful, and this was largely attributed to the weakness of the attack. 
@@ -37,7 +68,7 @@ However, we discovered that a fairly minor modification to the random initializa
 ## But I've tried FGSM adversarial training before, and it didn't work! 
 In our experiments, we discovered several failure modes which would cause FGSM adversarial training to ``catastrophically fail'', like in the following plot. 
 
-![overfitting](https://github.com/aliborji/ShapeDefence/blob/master/teaser.jpg)
+
 
 If FGSM adversarial training hasn't worked for you in the past, then it may be because of one of the following reasons (which we present as a non-exhaustive list of ways to fail): 
 
@@ -52,3 +83,20 @@ All of these pitfalls can be avoided by simply using early stopping based on a s
 ## Why does this matter if I still want to use PGD adversarial training in my experiments? 
 
 The speedups gained from using mixed-precision arithmetic and cyclic learning rates can still be reaped regardless of what training regimen you end up using! For example, these techniques can speed up CIFAR10 PGD adversarial training by almost 2 orders of magnitude, reducing training time by about 3.5 days to just over 1 hour. The engineering costs of installing the `apex` library and changing the learning rate schedule are miniscule in comparison to the time saved from using these two techniques, and so even if you don't use FGSM adversarial training, you can still benefit from faster experimentation with the DAWNBench improvements. 
+
+
+
+## Citation
+
+If you use this code in your research, please cite this project.
+
+```
+@article{reluDefense2020,
+  title={Harnessing adversarial examples with a surprisingly simple defense},
+  author={Borji, Al},
+  journal={arXiv preprint arXiv:2004.13013},
+  year={2020}
+}
+```
+
+
