@@ -33,39 +33,12 @@ pip install -r requirements.txt
 To train a robust model run the following command:
 
 ```
-python train.py --net_type [NET_TYPE]
-
- --model [MODEL_TYPE] --sigmas [LIST_OF_SIGMAS]  --data_dir [DATA_FOLDER]  --classes 10 --epochs 10 --inp_size 28 --load_model [LOAD_MODEL_IF_EXISTS_RESUME]
+python train.py --net_type [NET_TYPE] --model [MODEL_TYPE] --sigmas [LIST_OF_SIGMAS]  --data_dir [DATA_FOLDER]  --classes 10 --epochs 10 --inp_size 28 --load_model [LOAD_MODEL_IF_EXISTS]
 ```
 
-rgbedge
-fashionmnist
-8 32 64
-fashionmnist
-
-
-This trains a robust model with the default parameters. The training parameters can be set by changing the configs.yml config file. Please run python main_free.py --help to see the list of possible arguments. The script saves the trained models into the trained_models folder and the logs into the output folder.
-
-
-
-
-## Results over MNIST and CIFAR-10
-
-+ Performance of the model against $L_\infty$ 
-Please see the paper for more details.
-
-|          | CIFAR-10 Acc | CIFAR10 Adv Acc (eps=8/255) | Time (minutes) | 
-| --------:| -----------:|----------------------------:|---------------:| 
-| FGSM     |      86.06% |                      46.06% |             12 |
-| Free     |      85.96% |                      46.33% |            785 |
-| PGD      |      87.30% |                      45.80% |           4966 |
-
-|          | ImageNet Acc | ImageNet Adv Acc (eps=2/255) | Time (hours) | 
-| --------:| ------------:|-----------------------------:|-------------:| 
-| FGSM     |       60.90% |                       43.46% |           12 |
-| Free     |       64.37% |                       43.31% |           52 |
-
-
+This trains a robust model with the following parameters. [NET_TYPE] can be edge, rgb or rgbedge. [MODEL_TYPE] determines the type of the model and [DATA_FOLDER] sets the folder containing data. Please see model.py for some examples. [LIST_OF_SIGMAS] is the list of perturbation budgets. It trains one several models for each sigma. [LOAD_MODEL_IF_EXISTS] loads a trained classifier to build a robust model for it. See sample_pgd40_mnist_results folder for some sample generated results.
+You also need to specify the type of the edge detector that you want to use in the config.py.
+For some other codes, I have placed a sample line how to call it at the begining of the .py file. Also please see run.sh for running the code in scale.
 
 
 ## Citation
@@ -73,10 +46,10 @@ Please see the paper for more details.
 If you use this code in your research, please cite this project.
 
 ```
-@article{reluDefense2020,
-  title={Harnessing adversarial examples with a surprisingly simple defense},
+@article{shapeDefense2020,
+  title={Shape Defense},
   author={Borji, Al},
-  journal={arXiv preprint arXiv:2004.13013},
+  journal={xx},
   year={2020}
 }
 ```
