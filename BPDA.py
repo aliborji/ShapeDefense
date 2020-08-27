@@ -12,6 +12,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
+
+###############  Substitue / black box attack ! #######################################################
+
+
+
+
 ###############  IMPORTANT: Specify your edge detector in config.py #######################################################
 
 # Training settings

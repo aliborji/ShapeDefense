@@ -13,9 +13,9 @@ EDGE_ALL_CHANNELS = False
 
 # edge_detect = None
 
-edge_detect = edge_detector.detect_edge_gtsrb
+# edge_detect = edge_detector.detect_edge_gtsrb
 
-# edge_detect = edge_detector.detect_edge_mnist
+edge_detect = edge_detector.detect_edge_mnist
 
 # edge_detect = edge_detector.detect_edge_new
 

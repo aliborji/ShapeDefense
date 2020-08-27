@@ -142,7 +142,8 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
                     loss_adv = criterior(outputs_adv, labels)
                     _, preds_adv = torch.max(outputs_adv, axis=1)
 
-                    alpha = .5
+                    alpha = .5 
+                    #alpha = 0 # just experimenting
                     loss = alpha*loss + (1-alpha)*loss_adv
 
 
@@ -221,7 +222,9 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
         for images, labels in dataloader_dict['val']:
             images, labels = images.to(device), labels.to(device)         
             # images = (images-images.min()) / (images.max()-images.min())                
+            # import pdb; pdb.set_trace()            
             images = attack(images, labels)#.cuda()
+
 
             outputs = net(images)
 
@@ -345,7 +348,7 @@ def test_model_BPDA_attack(net, substitute_net, dataloader_dict, epsilons, attac
 
             # if (net_type in ['rgbedge', 'grayedge']) and redetect_edge: # BPDA is only for x+edge models
               # import pdb;pdb.set_trace()
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             # edge_maps = torch.zeros((images.shape[0],1,images.shape[2],images.shape[2]))              
             # data = torch.cat((images_attacked, edge_maps),dim=1)#[None]
             images[:,:-1] = images_attacked # replace the healthy image with attacked one
