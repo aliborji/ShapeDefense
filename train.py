@@ -26,7 +26,7 @@ parser.add_argument('--classes', type=int, default=10, help='number of classes')
 parser.add_argument('--inp_size', type=int, default=28, help='size of the input image')
 parser.add_argument('--sigmas', nargs='+', type=int)
 parser.add_argument('--load_model', type=str, default='', help='path to the trained model')
-
+parser.add_argument('--alpha', type=int, default=.5, help='loss balance ratio') # not implemented yet in the utils model!! TODO
 
 opt = parser.parse_args()
 print(opt)
