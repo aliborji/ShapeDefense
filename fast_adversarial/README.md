@@ -1,12 +1,12 @@
 # Shape-based Fast adversarial training using FGSM
-# Modified by Ali Borji 
-# AUG 27 2020
+Modified by Ali Borji 
+AUG 27 2020
 
-# Make sure you set the right parameters in the config.py.
-# Use evaluate_xx.py to evalauet a trained model.
+Make sure you set the right parameters in the config.py.
+Use evaluate_xx.py to evalauet a trained model.
 
 
-# Following comes the readme from the original code.
+Following comes the readme from the original code.
 
 
 
