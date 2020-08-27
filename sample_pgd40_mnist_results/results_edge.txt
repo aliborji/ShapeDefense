@@ -1,0 +1,13 @@
+Accuracy of original model on clean images: 0.775500 
+eps_t=8 
+Accuracy of clean model on adversarial images: 0.710900 
+Accuracy of robust model on clean images: 0.783200 
+Accuracy of robust model on adversarial images: 0.743900 
+eps_t=32 
+Accuracy of clean model on adversarial images: 0.369800 
+Accuracy of robust model on clean images: 0.769100 
+Accuracy of robust model on adversarial images: 0.661300 
+eps_t=64 
+Accuracy of clean model on adversarial images: 0.002000 
+Accuracy of robust model on clean images: 0.742700 
+Accuracy of robust model on adversarial images: 0.574300 
