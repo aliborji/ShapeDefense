@@ -1,11 +1,11 @@
 # Shape Defense
 
 * This repository includes the following:
-+ Edge-guided Adversarial Training (EAT)
-+ GAN-based Shape Defense (GSD)
-+ Shape-based fast adversarial training
-+ Shape-based free adversarial training
-+ Robustness evaluation against natural image corruptions
+    + Edge-guided Adversarial Training (EAT)
+    + GAN-based Shape Defense (GSD)
+    + Shape-based fast adversarial training
+    + Shape-based free adversarial training
+    + Robustness evaluation against natural image corruptions
 
 It shows that incorporating edges to images followed by adversarial training and edge redetection at inference time improves robustness drastically.
 
