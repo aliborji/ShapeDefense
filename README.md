@@ -41,11 +41,11 @@ For some other codes, I have placed a sample line how to call it at the begining
 
 
 ### Additional:
-Run BPDA.py if you want to conduct a substitute attack! (bad naming here perhaps!)
-Run test_noise_robustness.py for testing a model against natural perturbations.
-Run edge_only_attack.py if you want to only attack ede pixels (i.e., removing attack on non-edge pixels)
-Run plots.ipynb for plotting results
-See also visualization for runing edge detection on clean and attacked images
++ Run BPDA.py if you want to conduct a substitute attack! (bad naming here perhaps!)
++ Run test_noise_robustness.py for testing a model against natural perturbations.
++ Run edge_only_attack.py if you want to only attack ede pixels (i.e., removing attack on non-edge pixels)
++ Run plots.ipynb for plotting results
++ See also visualization for runing edge detection on clean and attacked images
 
 
 
