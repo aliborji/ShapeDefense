@@ -40,6 +40,15 @@ You also need to specify the type of the edge detector that you want to use in t
 For some other codes, I have placed a sample line how to call it at the begining of the .py file. Also please see run.sh for running the code in scale.
 
 
+### Additional:
+Run BPDA.py if you want to conduct a substitute attack! (bad naming here perhaps!)
+Run test_noise_robustness.py for testing a model against natural perturbations.
+Run edge_only_attack.py if you want to only attack ede pixels (i.e., removing attack on non-edge pixels)
+Run plots.ipynb for plotting results
+See also visualization for runing edge detection on clean and attacked images
+
+
+
 ## Citation
 
 If you use this code in your research, please cite this project.
