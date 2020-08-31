@@ -142,8 +142,8 @@ def train_robust_model(net, dataloader_dict, criterior, optimizer, num_epochs, s
                     loss_adv = criterior(outputs_adv, labels)
                     _, preds_adv = torch.max(outputs_adv, axis=1)
 
-                    # alpha = .5 
-                    alpha = 0 # just experimenting
+                    alpha = .5 
+                    #alpha = 0 # just experimenting
                     loss = alpha*loss + (1-alpha)*loss_adv
 
 
@@ -367,6 +367,102 @@ def test_model_BPDA_attack(net, substitute_net, dataloader_dict, epsilons, attac
 
 
 
+
+def test_model_edge_only(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_type='edge'):
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+
+    net.eval()
+    accuracies = []; examples = []
+
+    for eps in epsilons:
+
+        if attack_type.upper() == 'FGSM':
+            attack = FGSM(net, eps=eps)    
+        else:    
+            attack = PGD(net, eps=eps, alpha=8/255, iters=40)      
+        
+            
+        correct = 0; total = 0;       
+
+        # import pdb; pdb.set_trace()
+        for images, labels in dataloader_dict['val']:
+            images, labels = images.to(device), labels.to(device)         
+            # images = (images-images.min()) / (images.max()-images.min())                
+            # import pdb; pdb.set_trace()            
+            orig_edge_map = images[:,-1]
+            orig_edge_map = orig_edge_map > 0
+
+            images = attack(images, labels)#.cuda()
+
+            # mask the non edge pixel on the attacked edge map
+            images[:,-1] = images[:,-1] * orig_edge_map
+
+            outputs = net(images)
+
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum()
+
+        acc = float(correct) / total
+        accuracies.append(acc)
+
+    return accuracies, images    
+
+
+
+
+
+def test_model_gray_only(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_type='gray'):
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+
+    net.eval()
+    accuracies = []; examples = []
+
+    for eps in epsilons:
+
+        if attack_type.upper() == 'FGSM':
+            attack = FGSM(net, eps=eps)    
+        else:    
+            attack = PGD(net, eps=eps, alpha=8/255, iters=40)      
+        
+            
+        correct = 0; total = 0;       
+
+        # import pdb; pdb.set_trace()
+        for images, labels in dataloader_dict['val']:
+            images, labels = images.to(device), labels.to(device)         
+            # images = (images-images.min()) / (images.max()-images.min())                
+            # import pdb; pdb.set_trace()            
+            orig_fg_map = images[:,0]#.unsqueeze(1) # grab only the digit / forground
+            orig_fg_map = orig_fg_map > 0
+
+            images = attack(images, labels)#.cuda()
+
+            # mask the non edge pixel on the attacked edge map
+            images[:,0] = images[:,0] * orig_fg_map
+
+            outputs = net(images)
+
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum()
+
+        acc = float(correct) / total
+        accuracies.append(acc)
+
+    return accuracies, images    
 
 
 
