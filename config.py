@@ -9,7 +9,7 @@ random.seed(42)
 
 # This specifies whether edge detection should be done only on RGB (when FALSE) or use 
 # False means only rgb is used for edge detection
-EDGE_ALL_CHANNELS = False  
+EDGE_ALL_CHANNELS = True 
 
 # edge_detect = None
 

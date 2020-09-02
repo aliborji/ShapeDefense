@@ -3,7 +3,7 @@ from config import *
 from edge_detector import *
 import torchattacks
 # import copy
-from torchattacks import PGD, FGSM
+from torchattacks import PGD, FGSM, CW
 import time
 import numpy as np
 from PIL import Image
@@ -212,11 +212,14 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
 
         if attack_type.upper() == 'FGSM':
             attack = FGSM(net, eps=eps)    
-        else:    
+        elif attack_type.upper() == 'PGD':
             attack = PGD(net, eps=eps, alpha=8/255, iters=40)      
+        elif attack_type.upper() == 'CW': # carlini wagner
+            attack = CW(net, targeted=False, c=1e-4, kappa=0, iters=1000, lr=0.01) # L2
         
             
-        correct = 0; total = 0;       
+        correct = 0; total = 0;
+        # counter = 0       
 
         # import pdb; pdb.set_trace()
         for images, labels in dataloader_dict['val']:
@@ -237,6 +240,11 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
             total += labels.size(0)
             correct += (predicted == labels).sum()
 
+            # counter += 1 
+            # if counter == 1000 and attack_type == 'CW':
+            #     break
+
+
         acc = float(correct) / total
         accuracies.append(acc)
 
@@ -244,6 +252,54 @@ def test_model_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_
 
 
 
+
+
+def test_model_image_edge_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_type='rgb'):
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+
+    net.eval()
+    accuracies = []; examples = []
+
+    for eps in epsilons:
+
+        if attack_type.upper() == 'FGSM':
+            attack = FGSM(net, eps=eps)    
+        elif attack_type.upper() == 'PGD':
+            attack = PGD(net, eps=eps, alpha=8/255, iters=40)      
+        
+            
+        correct = 0; total = 0;
+
+        # import pdb; pdb.set_trace()
+        for images, labels in dataloader_dict['val']:
+            images, labels = images.to(device), labels.to(device)         
+
+            images = attack(images, labels)#.cuda()
+
+            # import pdb;pdb.set_trace()
+            images = detect_edge_batch(images)
+            # images = images[:,-1]
+
+            outputs = net(images)
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum()
+
+            # counter += 1 
+            # if counter == 1000 and attack_type == 'CW':
+            #     break
+
+
+        acc = float(correct) / total
+        accuracies.append(acc)
+
+    return accuracies, images    
 
 
 
@@ -465,6 +521,54 @@ def test_model_gray_only(net, dataloader_dict, epsilons, attack_type = 'FGSM', n
     return accuracies, images    
 
 
+
+
+def test_model_gray_attack(net, dataloader_dict, epsilons, attack_type = 'FGSM', net_type='gray'):
+    '''
+    attack only the gray channel; i.e perform backprop only on the gray image and fix the gradient on the edge map
+    '''
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+
+    net.eval()
+    accuracies = []; examples = []
+
+    for eps in epsilons:
+
+        if attack_type.upper() == 'FGSM':
+            attack = FGSM(net, eps=eps)    
+        elif attack_type.upper() == 'PGD':
+            attack = PGD(net, eps=eps, alpha=8/255, iters=40)      
+        elif attack_type.upper() == 'CW': # carlini wagner
+            attack = CW(net, targeted=False, c=1e-4, kappa=0, steps=1000, lr=0.01) # L2
+
+
+        
+            
+        correct = 0; total = 0;       
+
+        # import pdb; pdb.set_trace()
+        for images, labels in dataloader_dict['val']:
+            images, labels = images.to(device), labels.to(device)         
+            # images = (images-images.min()) / (images.max()-images.min())                
+            import pdb; pdb.set_trace()            
+
+            images = attack(images, labels)#.cuda()
+
+            outputs = net(images)
+
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum()
+
+        acc = float(correct) / total
+        accuracies.append(acc)
+
+    return accuracies, images    
 
 
 

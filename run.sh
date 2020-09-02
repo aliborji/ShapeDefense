@@ -33,15 +33,15 @@
 
 
 
-python test_noise_robustness.py --n rgb -m icons_rgb.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n edge -m icons_edge.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n rgbedge -m icons_rgbedge.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n edge -m FGSM-Icons/icons_edge_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n rgb -m FGSM-Icons/icons_rgb_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n rgbedge -m FGSM-Icons/icons_rgbedge_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n edge -m FGSM-Icons/icons_edge_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n rgb -m FGSM-Icons/icons_rgb_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
-python test_noise_robustness.py --n rgbedge -m FGSM-Icons/icons_rgbedge_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgb -m icons_rgb.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n edge -m icons_edge.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgbedge -m icons_rgbedge.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n edge -m FGSM-Icons/icons_edge_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgb -m FGSM-Icons/icons_rgb_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgbedge -m FGSM-Icons/icons_rgbedge_8_robust_8.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n edge -m FGSM-Icons/icons_edge_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgb -m FGSM-Icons/icons_rgb_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
+# python test_noise_robustness.py --n rgbedge -m FGSM-Icons/icons_rgbedge_32_robust_32.pth --data_dir Icons-50 --classes 50 --inp_size 64
 
 
 
@@ -60,5 +60,14 @@ python test_noise_robustness.py --n rgbedge -m FGSM-Icons/icons_rgbedge_32_robus
 
 
 
+
+for S in 8 32 64
+do
+	# python test.py --net_type gray --model FashionMNIST  --sigma 0 --data_dir FashionMNIST --classes 10 --inp_size 28 --load_model ResFashionMNIST/FGSM/mnistfashion_edge_${S}_robust_${S}.pth --attack pgd	
+	# python test.py --net_type gray --model FashionMNIST  --sigma $S --data_dir FashionMNIST --classes 10 --inp_size 28 --load_model ResFashionMNIST/FGSM/mnistfashion_edge_${S}_robust_${S}.pth --attack pgd
+	python test.py --net_type gray --model MNIST  --sigma 0 --data_dir MNIST --classes 10 --inp_size 28 --load_model ResMNIST/FGSM/mnist_edge_${S}_robust_${S}.pth --attack pgd	
+	python test.py --net_type gray --model MNIST  --sigma $S --data_dir MNIST --classes 10 --inp_size 28 --load_model ResMNIST/FGSM/mnist_edge_${S}_robust_${S}.pth --attack pgd
+
+done	
 
 
