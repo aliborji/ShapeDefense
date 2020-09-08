@@ -175,21 +175,22 @@ def show_performance(distortion_name):
             # data = V(data.cuda(), volatile=True)
             # import pdb; pdb.set_trace()
 
-            # if batch_idx>0: break
+            if batch_idx>0: break
             for idx,d in enumerate(data):
-                # if idx>0: break
+                if idx>0: break
                 # import pdb; pdb.set_trace()                
                 # exr = distortion_name + '(d*255,severity)'
                 exr = distortion_name + '(d[:3].permute(1,2,0)*255,severity)'
                 aa = torch.Tensor(eval(exr))
                 data[idx][:3] = transform((aa/255).numpy())
-                out_img = data[idx][:3].permute(1,2,0)
+                # out_img = data[idx][:3].permute(1,2,0)
 
                 # uncomment this to save some sample images
                 # out_img = (out_img - out_img.min())/ (out_img.max() - out_img.min())
                 # out_img = out_img*255
                 # save_img(out_img, "sampleRobustness/{}".format(distortion_name+str(severity)+'.jpg'))
-
+            # idx = 0    
+            
             if net_type in ['rgbedge', 'edge']:
                 # import pdb; pdb.set_trace()                
                 # edge_maps = torch.zeros((data.shape[0],1,data.shape[2],data.shape[2]))
@@ -198,6 +199,13 @@ def show_performance(distortion_name):
 
                 if net_type == 'edge':
                     data = data[:,3].unsqueeze(1)
+
+                    # saving some sample edge maps
+                    # import pdb; pdb.set_trace()                
+                    # out_img = data[idx][:3].squeeze(0)
+                    # out_img = (out_img - out_img.min())/ (out_img.max() - out_img.min())
+                    # out_img = out_img*255
+                    # save_img(out_img, "sampleRobustness/edge_{}".format(distortion_name+str(severity)+'.jpg'))
 
 
             # if net_type == 'rgbedge':

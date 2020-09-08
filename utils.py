@@ -305,6 +305,50 @@ def test_model_image_edge_attack(net, dataloader_dict, epsilons, attack_type = '
 
 
 
+def test_model_blackout_img(net, dataloader_dict):
+    # device GPU or CPU?
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device: {}".format(device))
+
+    # move network to train on device 
+    net.to(device)
+
+    net.eval()
+    accuracies = []
+
+            
+    correct = 0; total = 0;
+
+    # import pdb; pdb.set_trace()
+    for images, labels in dataloader_dict['val']:
+        images, labels = images.to(device), labels.to(device)         
+
+
+        # import pdb;pdb.set_trace()
+        images = detect_edge_batch(images)
+        images[:,:-1]  = 0 # black out img channels
+        # images[:,-1]  = 0 # black out img channels        
+
+
+        outputs = net(images)
+
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum()
+
+        # counter += 1 
+        # if counter == 1000 and attack_type == 'CW':
+        #     break
+
+
+    acc = float(correct) / total
+    accuracies.append(acc)
+
+    return accuracies, images    
+
+
+
+
 # Train model
 def train_substitue_model(net, substitute_net, dataloader_dict, optimizer, num_epochs, save_path):
 

@@ -67,6 +67,10 @@ net.to(device)
 # acc_attack, _ = test_model_clean(net, dataloader_dict)
 # print('Accuracy of the original model on clean images: %f' % acc_attack)
 
+acc_attack, _ = test_model_blackout_img(net, dataloader_dict)
+print('Accuracy of the orig robust model on black out images: %f' % acc_attack[0])
 
-acc_attack, _ = test_model_image_edge_attack(net, dataloader_dict, epsilons, attack_type, net_type)
-print('Accuracy of the orig robust model on adversarial images: %f' % acc_attack[0])
+
+
+# acc_attack, _ = test_model_image_edge_attack(net, dataloader_dict, epsilons, attack_type, net_type)
+# print('Accuracy of the orig robust model on adversarial images: %f' % acc_attack[0])
