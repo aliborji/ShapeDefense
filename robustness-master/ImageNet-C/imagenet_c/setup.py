@@ -22,7 +22,7 @@ setuptools.setup(
     },
     install_requires=[
         'wand ~= 0.4',
-        'opencv-python ~= 3.4',
+        'opencv-python >= 3.4,< 5.0',
     ],
     #include_package_data=True,
     classifiers=[
